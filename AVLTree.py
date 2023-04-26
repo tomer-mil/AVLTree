@@ -16,16 +16,17 @@ class AVLNode(object):
 	@type value: any
 	@param value: data of your node
 	"""
-	def __init__(self, key, value):
+	def __init__(self, key: int = None, height: int = 0, value=None):
 		self.key = key
 		self.value = value
 		self.left = None
 		self.right = None
 		self.parent = None
-		self.height = -1
+		self.height = height
 		self.size = 0
-		self.bf = 0
 
+	def __repr__(self):
+		return f"key: {self.key} | h: {self.height} | BF: {self.get_bf()} | size: {self.get_size()}"
 
 	"""returns the key
 	@rtype: int or None
@@ -69,7 +70,6 @@ class AVLNode(object):
 	def get_parent(self):
 		return self.parent
 
-
 	"""returns the height
 
 	@rtype: int
@@ -77,7 +77,6 @@ class AVLNode(object):
 	"""
 	def get_height(self):
 		return self.height
-
 
 	"""returns the size of the subtree
 
@@ -87,6 +86,8 @@ class AVLNode(object):
 	def get_size(self):
 		return self.size
 
+	def get_bf(self):
+		return self.left.height - self.right.height
 
 	"""sets key
 	@type key: int or None
@@ -130,6 +131,11 @@ class AVLNode(object):
 	def set_height(self, h):
 		self.height = h
 
+	def need_height_change(self):
+		return self.height != (1 + max(self.left.height, self.right.height))
+
+
+
 	"""sets the size of node
 	@type s: int
 	@param s: the size
@@ -144,6 +150,10 @@ class AVLNode(object):
 	def is_real_node(self):
 		return self.key is not None
 
+	def add_dummy_nodes(self):
+		self.right = AVLNode(height=-1)
+		self.left = AVLNode(height=-1)
+
 
 """
 A class implementing an AVL tree.
@@ -156,9 +166,12 @@ class AVLTree(object):
 
 	"""
 	def __init__(self):
-		self.root = None
+		self.root = AVLNode()  # initializes with dummy node
 		self.min = None
 		# add your fields here
+
+	def is_empty(self):
+		return not self.root.is_real_node()
 
 	"""searches for a value in the dictionary corresponding to the key
 	@type key: int
@@ -169,6 +182,9 @@ class AVLTree(object):
 	def search(self, key):
 		return None
 
+	####################
+	###### Insert ######
+	####################
 	"""inserts val at position i in the dictionary
 	@type key: int
 	@pre: key currently does not appear in the dictionary
@@ -179,7 +195,132 @@ class AVLTree(object):
 	@returns: the number of rebalancing operation due to AVL rebalancing
 	"""
 	def insert(self, key, val):
+		new_node = AVLNode(key=key, value=val)
+
+		self.BST_insert(node=new_node)
+
+		curr_node = new_node.get_parent()
+
+		while curr_node is not None:
+
+			did_change_hight = False
+
+			if curr_node.need_height_change():
+				self.update_height(node=curr_node)
+				did_change_hight = True
+			curr_node_abs_bf = abs(curr_node.get_bf())
+
+			if (not curr_node.need_height_change()) and (curr_node_abs_bf < 2):
+				return
+			elif curr_node.need_height_change() and curr_node_abs_bf < 2:
+				curr_node = curr_node.get_parent()
+			elif curr_node_abs_bf == 2:
+				self.rotate(node=curr_node)
+				return
+
+			curr_node = curr_node.get_parent()
+
 		return -1
+
+	def rotate(self, node: AVLNode):
+		print("On rotate")
+
+		node_bf = node.get_bf()
+		child_bf = node.left.get_bf() if node_bf == 2 else node.right.get_bf()
+
+		if node_bf == 2:
+			if child_bf == 1:
+				self.right_rotation(node=node)
+			else:
+				self.left_then_right_rotation(node=node)
+		else:
+			if child_bf == -1:
+				self.left_rotation(node=node)
+			else:
+				self.right_then_left_rotation(node=node)
+
+	def right_rotation(self, node: AVLNode, is_partial: bool = False):
+
+		B = node
+		A = node.left
+
+		B.left = A.right
+		B.left.parent = B
+		A.right = B
+		A.parent = B.parent
+
+		if is_partial:
+			A.parent.right = A
+		else:
+			A.parent.left = A
+
+		B.parent = A
+
+		B.height
+
+	def left_rotation(self, node: AVLNode, is_partial: bool = False):
+
+		B = node
+		A = node.right
+
+		B.right = A.left
+		B.right.parent = B
+		A.left = B
+		A.parent = B.parent
+
+		if is_partial:
+			A.parent.left = A
+		else:
+			A.parent.right = A
+
+		B.parent = A
+
+	def right_then_left_rotation(self, node: AVLNode):
+		self.right_rotation(node=node, is_partial=True)
+		self.left_rotation(node=node.parent.parent)
+
+	def left_then_right_rotation(self, node: AVLNode):
+		self.left_rotation(node=node, is_partial=True)
+		self.right_rotation(node=node.parent.parent)
+
+	def update_height(self, node: AVLNode):
+		node.set_height(h=(1 + max(node.left.height, node.right.height)))
+
+	def BST_insert(self, node: AVLNode):
+
+		node.add_dummy_nodes()
+
+		if self.is_empty():
+			self.root = node
+			self.root.size += 1
+
+		else:
+			higher_node = AVLNode()
+			lower_node = self.root
+
+			# walking down the tree
+			while lower_node.is_real_node():
+				higher_node = lower_node
+
+				higher_node.size += 1
+
+				if node.key < lower_node.key:
+					lower_node = lower_node.left
+				else:
+					lower_node = lower_node.right
+
+			node.parent = higher_node
+
+			# inserting at the right place
+			if node.key < higher_node.key:
+				higher_node.left = node
+			else:
+				higher_node.right = node
+
+			# if higher_node.need_height_change():
+			# 	self.update_height(node=higher_node)
+
+	####################
 
 	"""deletes node from the dictionary
 	@type node: AVLNode
@@ -257,3 +398,81 @@ class AVLTree(object):
 	"""
 	def get_root(self):
 		return self.root
+
+	#########################
+	##### Print Methods #####
+	#########################
+	def printt(self):
+		out = ""
+		for row in self.printree(self.root):  # need printree.py file
+			out = out + row + "\n"
+		print(out)
+
+	def printree(self, t, bykey=True):
+		# for row in trepr(t, bykey):
+		#        print(row)
+		return self.trepr(t, True)
+
+	def trepr(self, t, bykey=False):
+		if t == None:
+			return ["#"]
+
+		thistr = f"{t.key}, h: {t.height}" if bykey else str(t.get_value())
+
+		return self.conc(self.trepr(t.left, bykey), thistr, self.trepr(t.right, bykey))
+
+	def conc(self, left, root, right):
+
+		lwid = len(left[-1])
+		rwid = len(right[-1])
+		rootwid = len(root)
+
+		result = [(lwid + 1) * " " + root + (rwid + 1) * " "]
+
+		ls = self.leftspace(left[0])
+		rs = self.rightspace(right[0])
+		result.append(ls * " " + (lwid - ls) * "_" + "/" + rootwid *
+					  " " + "\\" + rs * "_" + (rwid - rs) * " ")
+
+		for i in range(max(len(left), len(right))):
+			row = ""
+			if i < len(left):
+				row += left[i]
+			else:
+				row += lwid * " "
+
+			row += (rootwid + 2) * " "
+
+			if i < len(right):
+				row += right[i]
+			else:
+				row += rwid * " "
+
+			result.append(row)
+
+		return result
+
+	def leftspace(self, row):
+		# row is the first row of a left node
+		# returns the index of where the second whitespace starts
+		i = len(row) - 1
+		while row[i] == " ":
+			i -= 1
+		return i + 1
+
+	def rightspace(self, row):
+		# row is the first row of a right node
+		# returns the index of where the first whitespace ends
+		i = 0
+		while row[i] == " ":
+			i += 1
+		return i
+
+
+t = AVLTree()
+t.insert(5, "")
+t.insert(4, "")
+t.insert(6, "")
+t.insert(7, "")
+t.insert(3, "")
+t.printt()
