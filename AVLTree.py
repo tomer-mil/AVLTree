@@ -206,7 +206,7 @@ class AVLTree(object):
 
 
 		# walking up the tree
-		while curr_node is not None:
+		while curr_node:  # while curr_node's child (left or right) is not the root
 			print(curr_node.get_parent())
 			# update node attributes after BST insertion
 			did_height_change = curr_node.height_manager()
@@ -261,12 +261,15 @@ class AVLTree(object):
 
 		if is_partial:
 			A.parent.right = A
+			B.height_manager()  # "6" is a leaf after partial-right rotation
+			A.height_manager()  # "8" is a "6"'s parent after partial-right rotation
 		else:
-			A.parent.left = A
+			if A.parent:  # A.parent is not the root
+				A.parent.left = A
+			else:
+				self.root = A  # rotated the root (before rotation: self.root == node)
 
 		B.parent = A
-
-
 
 	def left_rotation(self, node: AVLNode, is_partial: bool = False):
 
@@ -280,18 +283,24 @@ class AVLTree(object):
 
 		if is_partial:
 			A.parent.left = A
+			B.height_manager()
+			A.height_manager()
+
 		else:
-			A.parent.right = A
+			if A.parent:  # A.parent is not the root
+				A.parent.right = A
+			else:
+				self.root = A  # rotated the root (before rotation: self.root == node)
 
 		B.parent = A
 
 	def right_then_left_rotation(self, node: AVLNode):
-		self.right_rotation(node=node, is_partial=True)
-		self.left_rotation(node=node.parent.parent)
+		self.right_rotation(node=node.right, is_partial=True)
+		self.left_rotation(node=node)
 
 	def left_then_right_rotation(self, node: AVLNode):
-		self.left_rotation(node=node, is_partial=True)
-		self.right_rotation(node=node.parent.parent)
+		self.left_rotation(node=node.left, is_partial=True)
+		self.right_rotation(node=node)
 
 	def BST_insert(self, node: AVLNode):
 
@@ -477,9 +486,12 @@ class AVLTree(object):
 
 
 t = AVLTree()
-t.insert(5, "")
-t.insert(4, "")
-t.insert(6, "")
-t.insert(7, "")
+# t.insert(7, "")
+t.insert(8, "")
+t.insert(9, "")
+t.insert(10, "")
+# t.insert(8, "")
 t.insert(3, "")
+t.insert(2, "")
+t.insert(7, "")
 t.printt()
