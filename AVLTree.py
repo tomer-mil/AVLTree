@@ -207,7 +207,7 @@ class AVLTree(object):
 
 		# walking up the tree
 		while curr_node is not None:
-
+			print(curr_node.get_parent())
 			# update node attributes after BST insertion
 			did_height_change = curr_node.height_manager()
 
@@ -217,11 +217,9 @@ class AVLTree(object):
 				return
 			elif did_height_change and curr_node_abs_bf < 2:
 				curr_node = curr_node.get_parent()
-			elif curr_node_abs_bf == 2:
+			else:  # then: curr_node_abs_bf == 2:
 				self.rotate(node=curr_node)
 				return
-
-			curr_node = curr_node.get_parent()
 
 		return -1
 
@@ -242,6 +240,15 @@ class AVLTree(object):
 			else:
 				self.right_then_left_rotation(node=node)
 
+		# attribute update
+		# height update
+		node.height = 0  # node (=B) is a leaf now (node.height was 1, wasn't updated after BST insertion)
+		# note that we dont need to update nodes.parent.height here. (it will be updated in the next loop interation)
+
+	# TODO: delete these comments:
+	# (A's child (was node's grandchild before rotation, and after BST insertion) (new inserted node) remains a leaf, so no height change.
+	# A's height (A is node's son before rotation, and after BST insertion) remains 1 (A was a leaf before the BST insertion, and was updated to 1 after BST insertion)
+
 	def right_rotation(self, node: AVLNode, is_partial: bool = False):
 
 		B = node
@@ -259,9 +266,7 @@ class AVLTree(object):
 
 		B.parent = A
 
-		# attribute update
-		# height update
-		B.height -= 1  #
+
 
 	def left_rotation(self, node: AVLNode, is_partial: bool = False):
 
