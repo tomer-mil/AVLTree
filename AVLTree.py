@@ -131,9 +131,12 @@ class AVLNode(object):
 	def set_height(self, h):
 		self.height = h
 
-	def need_height_change(self):
-		return self.height != (1 + max(self.left.height, self.right.height))
-
+	def height_manager(self):
+		new_height = 1 + max(self.left.height, self.right.height)
+		if self.height != new_height:
+			self.height = new_height
+			return True  # height changed
+		return False  # height stays the same
 
 
 	"""sets the size of node
@@ -201,18 +204,18 @@ class AVLTree(object):
 
 		curr_node = new_node.get_parent()
 
+
+		# walking up the tree
 		while curr_node is not None:
 
-			did_change_hight = False
+			# update node attributes after BST insertion
+			did_height_change = curr_node.height_manager()
 
-			if curr_node.need_height_change():
-				self.update_height(node=curr_node)
-				did_change_hight = True
 			curr_node_abs_bf = abs(curr_node.get_bf())
 
-			if (not curr_node.need_height_change()) and (curr_node_abs_bf < 2):
+			if not did_height_change and curr_node_abs_bf < 2:
 				return
-			elif curr_node.need_height_change() and curr_node_abs_bf < 2:
+			elif did_height_change and curr_node_abs_bf < 2:
 				curr_node = curr_node.get_parent()
 			elif curr_node_abs_bf == 2:
 				self.rotate(node=curr_node)
@@ -256,7 +259,9 @@ class AVLTree(object):
 
 		B.parent = A
 
-		B.height
+		# attribute update
+		# height update
+		B.height -= 1  #
 
 	def left_rotation(self, node: AVLNode, is_partial: bool = False):
 
@@ -282,9 +287,6 @@ class AVLTree(object):
 	def left_then_right_rotation(self, node: AVLNode):
 		self.left_rotation(node=node, is_partial=True)
 		self.right_rotation(node=node.parent.parent)
-
-	def update_height(self, node: AVLNode):
-		node.set_height(h=(1 + max(node.left.height, node.right.height)))
 
 	def BST_insert(self, node: AVLNode):
 
