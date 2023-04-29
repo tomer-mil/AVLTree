@@ -444,8 +444,6 @@ class AVLTree(object):
 
 			return curr_node.parent if curr_node != self.root else curr_node
 
-
-
 	"""deletes node from the dictionary
 	@type node: AVLNode
 	@pre: node is a real pointer to a node in self
@@ -504,7 +502,17 @@ class AVLTree(object):
 	@returns: the rank of node in self
 	"""
 	def rank(self, node):
-		return None
+		count = node.left.size + 1
+		curr_node = node
+
+		while curr_node:
+			if curr_node.get_relative_direction() == "right":
+				count += curr_node.parent.left.size + 1
+			curr_node = curr_node.parent
+
+		return count
+
+
 
 	"""finds the i'th smallest item (according to keys) in self
 	@type i: int
@@ -514,8 +522,18 @@ class AVLTree(object):
 	@returns: the item of rank i in self
 	"""
 	def select(self, i):
-		return None
+		if i == self.root.left.size + 1:
+			return self.root
+		elif i <= self.root.left.size:  # Go to min (i-1 times)
+			curr_node = self.min
+			for _ in range(1, i):
+				curr_node = self.successor(node=curr_node)
+		else:  # Go to max (n-i times)
+			curr_node = self.max
+			for _ in range(1, self.size() - i + 1):
+				curr_node = self.predecessor(node=curr_node)
 
+		return curr_node
 	"""returns the root of the tree representing the dictionary
 	@rtype: AVLNode
 	@returns: the root, None if the dictionary is empty
