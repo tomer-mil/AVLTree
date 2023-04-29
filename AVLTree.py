@@ -206,10 +206,10 @@ class AVLTree(object):
 		return not self.root.is_real_node()
 
 	def should_update_min(self, node: AVLNode):
-		return node < self.min
+		return node < self.min if self.min else True
 
 	def should_update_max(self, node: AVLNode):
-		return node > self.max
+		return node > self.max if self.max else True
 
 
 	"""searches for a value in the dictionary corresponding to the key
@@ -409,7 +409,7 @@ class AVLTree(object):
 	#####################
 
 	def successor(self, node: AVLNode):
-		if node == self.max:
+		if node == self.max or self.is_empty():
 			return None
 
 		if node.right.is_real_node():
@@ -427,7 +427,7 @@ class AVLTree(object):
 			return curr_node.parent if curr_node != self.root else curr_node
 
 	def predecessor(self, node: AVLNode):
-		if node == self.min:
+		if node == self.min or self.is_empty():
 			return None
 
 		if node.left.is_real_node():
@@ -492,7 +492,19 @@ class AVLTree(object):
 	@returns: the absolute value of the difference between the height of the AVL trees joined
 	"""
 	def join(self, tree, key, val):
-		return None
+		height_difference = abs(self.root.height - tree.root.height) + 1
+
+		# check who is smaller
+
+
+		# check who is higher (let's say t1)
+
+		# get sub tree of t1 in height=t2.height or t2.height-1 where b is its root
+		# set t2 and b as children of x
+		# set the original parent of b to be the parent of x
+		# rebalance from x upwards
+
+		return height_difference
 
 	"""compute the rank of node in the self
 	@type node: AVLNode
@@ -562,7 +574,7 @@ class AVLTree(object):
 		if not t.is_real_node():
 			thistr = "D"
 		else:
-			thistr = f"{t.key}, h: {t.height}, s: {t.size}" if bykey else str(t.get_value())
+			thistr = f"{t.key} | h: {t.height}, s: {t.size}, r: {self.rank(node=t)}" if bykey else str(t.get_value())
 
 		return self.conc(self.trepr(t.left, bykey), thistr, self.trepr(t.right, bykey))
 
@@ -617,8 +629,10 @@ class AVLTree(object):
 #### Testing ####
 #################
 
-
 t1 = AVLTree()
+empty_t = AVLTree()
+root_t = AVLTree()
+root_t.insert(key=10, val="")
 
 small_test_import = [9, 8, 7, 10, 11]
 big_test_import = [9, 8, 7, 6, 36, 30, 31, 90, 95, 96, 4, 3, 2]
@@ -627,7 +641,7 @@ big_test_import = [9, 8, 7, 6, 36, 30, 31, 90, 95, 96, 4, 3, 2]
 def create_rand_keys(n: int = 100):
 	rand_test = set()
 	while len(rand_test) < n:
-		rand_test.add(random.randint(0, 100))
+		rand_test.add(random.randint(0, n ** 2))
 	return rand_test
 
 
@@ -641,12 +655,19 @@ def test_tree(t: AVLTree, keys, multiple_prints: bool = False):
 	else:
 		t.printt()
 
+#
+# test_tree(t=t1, keys=create_rand_keys(100000))
+# print(f"min: {t1.min}")
+# print(f"max: {t1.max}")
+# print(f"min_pred: {t1.predecessor(node=t1.min)}")
+# print(f"max_succ: {t1.successor(node=t1.max)}")
 
-test_tree(t=t1, keys=big_test_import)
-
-friend = t1.search(key=4)
-print(friend)
-print(t1.predecessor(node=friend))
+print(empty_t.predecessor(node=empty_t.root))
+print(empty_t.successor(node=empty_t.root))
+print(root_t.rank(node=root_t.root))
+# friend = t1.search(key=4)
+# print(friend)
+# print(t1.predecessor(node=friend))
 
 
 # for _ in range(0, 100):
