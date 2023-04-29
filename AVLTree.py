@@ -25,7 +25,7 @@ class AVLNode(object):
 		self.right = None
 		self.parent = None
 		self.height = height
-		self.size = 0
+		self.size = 1
 
 	def __repr__(self):
 		return f"key: {self.key} | h: {self.height} | BF: {self.get_bf()} | size: {self.get_size()}" if self.is_real_node() else "Dummy Node"
@@ -160,6 +160,9 @@ class AVLNode(object):
 	def set_size(self, s):
 		self.size = s
 
+	def update_size(self):
+		self.set_size(s=(self.right.size + self.left.size + 1))
+
 	"""returns whether self is not a virtual node 
 	@rtype: bool
 	@returns: False if self is a virtual node, True otherwise.
@@ -168,8 +171,14 @@ class AVLNode(object):
 		return self.key is not None
 
 	def add_dummy_nodes(self):
-		self.right = AVLNode(height=-1)
-		self.left = AVLNode(height=-1)
+		right_node = AVLNode(height=-1)
+		right_node.set_size(s=0)
+
+		left_node = AVLNode(height=-1)
+		left_node.set_size(s=0)
+
+		self.right = right_node
+		self.left = left_node
 
 
 """
@@ -179,8 +188,7 @@ A class implementing an AVL tree.
 
 class AVLTree(object):
 	"""
-	Constructor, you are allowed to add more fields.  
-
+	Constructor, you are allowed to add more fields.
 	"""
 	def __init__(self):
 		self.root = AVLNode()  # initializes with dummy node
@@ -205,8 +213,6 @@ class AVLTree(object):
 		else:
 			setattr(node.parent, relative_direction, node)
 
-
-
 	####################
 	###### Insert ######
 	####################
@@ -227,20 +233,24 @@ class AVLTree(object):
 
 		curr_node = new_node.get_parent()
 
-
-		# walking up the tree
+		# Walking up the tree
 		while curr_node:  # while curr_node's child (left or right) is not the root
-			print(curr_node.get_parent())
+
 			# update node attributes after BST insertion
 			did_height_change = curr_node.height_manager()
+			# curr_node.update_size()
 
 			curr_node_abs_bf = abs(curr_node.get_bf())
 
 			if not did_height_change and curr_node_abs_bf < 2:
+				curr_node.update_size()
 				return count_balance_actions
+
 			elif did_height_change and curr_node_abs_bf < 2:
+				curr_node.update_size()
 				curr_node = curr_node.get_parent()
 				count_balance_actions += 1
+
 			else:  # then: curr_node_abs_bf == 2:
 				count_balance_actions += self.rotate(node=curr_node)
 				return count_balance_actions
@@ -248,7 +258,6 @@ class AVLTree(object):
 		return count_balance_actions
 
 	def rotate(self, node: AVLNode):
-		print("On rotate")
 
 		# Check the relative direction of the node to its parent in order to connect the new node in the same location
 		relative_direction = node.get_relative_direction()
@@ -274,10 +283,11 @@ class AVLTree(object):
 		# Attribute update #
 		# height update
 		node.height_manager()
+		node.update_size()
 
 		return count_balance_actions_rotate  # TODO: make it more abstract
 
-	def right_rotation(self, node: AVLNode, relative_direction: str, is_partial: bool = False):
+	def right_rotation(self, node: AVLNode, relative_direction: str | None):
 
 		B = node
 		A = node.left
@@ -287,15 +297,22 @@ class AVLTree(object):
 		A.right = B
 		A.parent = B.parent
 
-		if not relative_direction:  # is_partial:
+		# Partial rotation (RL)
+		if not relative_direction:
 			A.parent.right = A
 			B.height_manager()  # "6" is a leaf after partial-right rotation
 			A.height_manager()  # "8" is a "6"'s parent after partial-right rotation
+			B.update_size()
+			A.update_size()
 		else:
 			self.set_as_child_after_rotation(A, relative_direction=relative_direction)
+
 		B.parent = A
 
-	def left_rotation(self, node: AVLNode, relative_direction: str, is_partial: bool = False):
+		B.update_size()
+		A.update_size()
+
+	def left_rotation(self, node: AVLNode, relative_direction: str | None):
 
 		B = node
 		A = node.right
@@ -305,22 +322,29 @@ class AVLTree(object):
 		A.left = B
 		A.parent = B.parent
 
-		if not relative_direction:  # is_partial:
+		# Partial rotation (LR)
+		if not relative_direction:
 			A.parent.left = A
 			B.height_manager()
 			A.height_manager()
+			# B.update_size()
+			# A.update_size()
 
 		else:
 			self.set_as_child_after_rotation(A, relative_direction=relative_direction)
 
 		B.parent = A
 
+		B.update_size()
+		A.update_size()
+
+
 	def right_then_left_rotation(self, node: AVLNode, relative_direction: str):
-		self.right_rotation(node=node.right, relative_direction=None)  #, is_partial=True)
+		self.right_rotation(node=node.right, relative_direction=None)
 		self.left_rotation(node=node, relative_direction=relative_direction)
 
 	def left_then_right_rotation(self, node: AVLNode, relative_direction: str):
-		self.left_rotation(node=node.left, relative_direction=None) #, is_partial=True)
+		self.left_rotation(node=node.left, relative_direction=None)
 		self.right_rotation(node=node, relative_direction=relative_direction)
 
 	def BST_insert(self, node: AVLNode):
@@ -353,9 +377,6 @@ class AVLTree(object):
 				higher_node.left = node
 			else:
 				higher_node.right = node
-
-			# if higher_node.need_height_change():
-			# 	self.update_height(node=higher_node)
 
 	####################
 
@@ -451,10 +472,13 @@ class AVLTree(object):
 		return self.trepr(t, True)
 
 	def trepr(self, t, bykey=False):
+
 		if t == None:
 			return ["#"]
-
-		thistr = f"{t.key}, h: {t.height}" if bykey else str(t.get_value())
+		if not t.is_real_node():
+			thistr = "D"
+		else:
+			thistr = f"{t.key}, h: {t.height}, s: {t.size}" if bykey else str(t.get_value())
 
 		return self.conc(self.trepr(t.left, bykey), thistr, self.trepr(t.right, bykey))
 
@@ -505,14 +529,38 @@ class AVLTree(object):
 			i += 1
 		return i
 
+#################
+#### Testing ####
+#################
 
-test_import = [9,8,7,6,36,30,31,90,95,96,4,3,2]
 
-t = AVLTree()
-count = 0
-for num in test_import:
-	count += t.insert(num, "")
-	t.printt()
-print(count)
-# t.printt()
+small_test_import = [9, 8, 7, 10, 11]
+big_test_import = [9, 8, 7, 6, 36, 30, 31, 90, 95, 96, 4, 3, 2]
+
+
+def create_rand_keys(n: int = 100):
+	rand_test = set()
+	while len(rand_test) < n:
+		rand_test.add(random.randint(0, 100))
+	return rand_test
+
+
+def test_tree(keys, multiple_prints: bool = False):
+	t = AVLTree()
+
+	for key in keys:
+		t.insert(key=key, val="")
+		if multiple_prints:
+			t.printt()
+	if not multiple_prints:
+		t.printt()
+
+
+for _ in range(0, 100):
+	t = AVLTree()
+	rand_keys = create_rand_keys(n=100)
+	for i in rand_keys:
+		t.insert(i, "")
+	print(t.root)
+
 
