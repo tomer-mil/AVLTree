@@ -193,6 +193,7 @@ class AVLTree(object):
 	def __init__(self):
 		self.root = AVLNode()  # initializes with dummy node
 		self.min = None
+		self.max = None
 		# add your fields here
 
 	def is_empty(self):
@@ -289,7 +290,7 @@ class AVLTree(object):
 				count_balance_actions_rotate = 2
 
 		# Attribute update #
-		# height update
+
 		node.height_manager()
 		node.update_size()
 
@@ -310,8 +311,7 @@ class AVLTree(object):
 			A.parent.right = A
 			B.height_manager()  # "6" is a leaf after partial-right rotation
 			A.height_manager()  # "8" is a "6"'s parent after partial-right rotation
-			B.update_size()
-			A.update_size()
+
 		else:
 			self.set_as_child_after_rotation(A, relative_direction=relative_direction)
 
@@ -335,8 +335,6 @@ class AVLTree(object):
 			A.parent.left = A
 			B.height_manager()
 			A.height_manager()
-			# B.update_size()
-			# A.update_size()
 
 		else:
 			self.set_as_child_after_rotation(A, relative_direction=relative_direction)
@@ -345,7 +343,6 @@ class AVLTree(object):
 
 		B.update_size()
 		A.update_size()
-
 
 	def right_then_left_rotation(self, node: AVLNode, relative_direction: str):
 		self.right_rotation(node=node.right, relative_direction=None)
@@ -387,6 +384,48 @@ class AVLTree(object):
 				higher_node.right = node
 
 	####################
+
+	#####################
+	#### Predecessor ####
+	#####################
+
+	def successor(self, node: AVLNode):
+		if node == self.max:
+			return None
+
+		if node.right.is_real_node():
+			curr_node = node.right
+			while curr_node.left.is_real_node():
+				curr_node = curr_node.left
+			return curr_node
+
+		# If i'm here- I'm not a root!
+		else:
+			curr_node = node
+			while curr_node.parent.right == curr_node:  # TODO: Make sure that curr_node != self.root is impossible
+				curr_node = curr_node.parent
+
+			return curr_node.parent if curr_node != self.root else curr_node
+
+	def predecessor(self, node: AVLNode):
+		if node == self.min:
+			return None
+
+		if node.left.is_real_node():
+			curr_node = node.left
+			while curr_node.right.is_real_node():
+				curr_node = curr_node.right
+			return curr_node
+
+		# If i'm here- I'm not a root!
+		else:
+			curr_node = node
+			while curr_node.parent.left == curr_node:  # TODO: Make sure that curr_node != self.root is impossible
+				curr_node = curr_node.parent
+
+			return curr_node.parent if curr_node != self.root else curr_node
+
+
 
 	"""deletes node from the dictionary
 	@type node: AVLNode
@@ -541,7 +580,9 @@ class AVLTree(object):
 #### Testing ####
 #################
 
+
 t1 = AVLTree()
+
 small_test_import = [9, 8, 7, 10, 11]
 big_test_import = [9, 8, 7, 6, 36, 30, 31, 90, 95, 96, 4, 3, 2]
 
@@ -559,13 +600,18 @@ def test_tree(t: AVLTree, keys, multiple_prints: bool = False):
 		t.insert(key=key, val="")
 		if multiple_prints:
 			t.printt()
-	if not multiple_prints:
+			return
+	else:
 		t.printt()
 
 
 test_tree(t=t1, keys=big_test_import)
-print(t1.search(key=90))
-#
+
+friend = t1.search(key=4)
+print(friend)
+print(t1.predecessor(node=friend))
+
+
 # for _ in range(0, 100):
 # 	t = AVLTree()
 # 	rand_keys = create_rand_keys(n=100)
