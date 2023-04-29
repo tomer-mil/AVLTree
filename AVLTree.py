@@ -38,6 +38,12 @@ class AVLNode(object):
 				return False
 		return self.key == other.key
 
+	def __lt__(self, other):
+		return self.key < other.key
+
+	def __gt__(self, other):
+		return self.key > other.key
+
 	"""returns the key
 	@rtype: int or None
 	@returns: the key of self, None if the node is virtual
@@ -199,6 +205,13 @@ class AVLTree(object):
 	def is_empty(self):
 		return not self.root.is_real_node()
 
+	def should_update_min(self, node: AVLNode):
+		return node < self.min
+
+	def should_update_max(self, node: AVLNode):
+		return node > self.max
+
+
 	"""searches for a value in the dictionary corresponding to the key
 	@type key: int
 	@param key: a key to be searched
@@ -239,6 +252,12 @@ class AVLTree(object):
 		new_node = AVLNode(key=key, value=val)
 
 		self.BST_insert(node=new_node)
+
+		# update tree attributes if needed
+		if self.should_update_min(node=new_node):
+			self.min = new_node
+		if self.should_update_max(node=new_node):
+			self.max = new_node
 
 		curr_node = new_node.get_parent()
 
