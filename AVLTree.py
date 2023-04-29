@@ -30,6 +30,14 @@ class AVLNode(object):
 	def __repr__(self):
 		return f"key: {self.key} | h: {self.height} | BF: {self.get_bf()} | size: {self.get_size()}" if self.is_real_node() else "Dummy Node"
 
+	def __eq__(self, other):
+		if not other:
+			if not self:
+				return True
+			else:
+				return False
+		return self.key == other.key
+
 	"""returns the key
 	@rtype: int or None
 	@returns: the key of self, None if the node is virtual
@@ -37,6 +45,10 @@ class AVLNode(object):
 	def get_key(self):
 		return self.key
 
+	def get_relative_direction(self):
+		if not self.parent:
+			return "root"
+		return "left" if self == self.parent.left else "right"
 
 	"""returns the value
 
@@ -187,6 +199,14 @@ class AVLTree(object):
 	def search(self, key):
 		return None
 
+	def set_as_child_after_rotation(self, node: AVLNode, relative_direction: str):
+		if relative_direction == "root":
+			setattr(self, relative_direction, node)
+		else:
+			setattr(node.parent, relative_direction, node)
+
+
+
 	####################
 	###### Insert ######
 	####################
@@ -228,25 +248,28 @@ class AVLTree(object):
 	def rotate(self, node: AVLNode):
 		print("On rotate")
 
+		# Check the relative direction of the node to its parent in order to connect the new node in the same location
+		relative_direction = node.get_relative_direction()
+
 		node_bf = node.get_bf()
 		child_bf = node.left.get_bf() if node_bf == 2 else node.right.get_bf()
 
 		if node_bf == 2:
 			if child_bf == 1:
-				self.right_rotation(node=node)
+				self.right_rotation(node=node, relative_direction=relative_direction)
 			else:
-				self.left_then_right_rotation(node=node)
+				self.left_then_right_rotation(node=node, relative_direction=relative_direction)
 		else:
 			if child_bf == -1:
-				self.left_rotation(node=node)
+				self.left_rotation(node=node, relative_direction=relative_direction)
 			else:
-				self.right_then_left_rotation(node=node)
+				self.right_then_left_rotation(node=node, relative_direction=relative_direction)
 
 		# Attribute update #
 		# height update
 		node.height_manager()
 
-	def right_rotation(self, node: AVLNode, is_partial: bool = False):
+	def right_rotation(self, node: AVLNode, relative_direction: str, is_partial: bool = False):
 
 		B = node
 		A = node.left
@@ -256,19 +279,15 @@ class AVLTree(object):
 		A.right = B
 		A.parent = B.parent
 
-		if is_partial:
+		if not relative_direction:  # is_partial:
 			A.parent.right = A
 			B.height_manager()  # "6" is a leaf after partial-right rotation
 			A.height_manager()  # "8" is a "6"'s parent after partial-right rotation
 		else:
-			if A.parent:  # A.parent is not the root
-				A.parent.left = A
-			else:
-				self.root = A  # rotated the root (before rotation: self.root == node)
-
+			self.set_as_child_after_rotation(A, relative_direction=relative_direction)
 		B.parent = A
 
-	def left_rotation(self, node: AVLNode, is_partial: bool = False):
+	def left_rotation(self, node: AVLNode, relative_direction: str, is_partial: bool = False):
 
 		B = node
 		A = node.right
@@ -278,26 +297,23 @@ class AVLTree(object):
 		A.left = B
 		A.parent = B.parent
 
-		if is_partial:
+		if not relative_direction:  # is_partial:
 			A.parent.left = A
 			B.height_manager()
 			A.height_manager()
 
 		else:
-			if A.parent:  # A.parent is not the root
-				A.parent.right = A
-			else:
-				self.root = A  # rotated the root (before rotation: self.root == node)
+			self.set_as_child_after_rotation(A, relative_direction=relative_direction)
 
 		B.parent = A
 
-	def right_then_left_rotation(self, node: AVLNode):
-		self.right_rotation(node=node.right, is_partial=True)
-		self.left_rotation(node=node)
+	def right_then_left_rotation(self, node: AVLNode, relative_direction: str):
+		self.right_rotation(node=node.right, relative_direction=None)  #, is_partial=True)
+		self.left_rotation(node=node, relative_direction=relative_direction)
 
-	def left_then_right_rotation(self, node: AVLNode):
-		self.left_rotation(node=node.left, is_partial=True)
-		self.right_rotation(node=node)
+	def left_then_right_rotation(self, node: AVLNode, relative_direction: str):
+		self.left_rotation(node=node.left, relative_direction=None) #, is_partial=True)
+		self.right_rotation(node=node, relative_direction=relative_direction)
 
 	def BST_insert(self, node: AVLNode):
 
@@ -482,11 +498,12 @@ class AVLTree(object):
 		return i
 
 
-test_import = [8, 9, 10, 3, 2, 1, 100, 36, 30, 31, 11, 12, 13, 14, 15]
+test_import = [9,8,7,6,36,30,31,90,95,96,4,3,2]
 
 t = AVLTree()
 
 for num in test_import:
 	t.insert(num, "")
+	t.printt()
 
-t.printt()
+# t.printt()
