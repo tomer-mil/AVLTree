@@ -220,6 +220,7 @@ class AVLTree(object):
 	@returns: the number of rebalancing operation due to AVL rebalancing
 	"""
 	def insert(self, key, val):
+		count_balance_actions = 0
 		new_node = AVLNode(key=key, value=val)
 
 		self.BST_insert(node=new_node)
@@ -236,14 +237,15 @@ class AVLTree(object):
 			curr_node_abs_bf = abs(curr_node.get_bf())
 
 			if not did_height_change and curr_node_abs_bf < 2:
-				return
+				return count_balance_actions
 			elif did_height_change and curr_node_abs_bf < 2:
 				curr_node = curr_node.get_parent()
+				count_balance_actions += 1
 			else:  # then: curr_node_abs_bf == 2:
-				self.rotate(node=curr_node)
-				return
+				count_balance_actions += self.rotate(node=curr_node)
+				return count_balance_actions
 
-		return -1
+		return count_balance_actions
 
 	def rotate(self, node: AVLNode):
 		print("On rotate")
@@ -257,17 +259,23 @@ class AVLTree(object):
 		if node_bf == 2:
 			if child_bf == 1:
 				self.right_rotation(node=node, relative_direction=relative_direction)
+				count_balance_actions_rotate = 1
 			else:
 				self.left_then_right_rotation(node=node, relative_direction=relative_direction)
+				count_balance_actions_rotate = 2
 		else:
 			if child_bf == -1:
 				self.left_rotation(node=node, relative_direction=relative_direction)
+				count_balance_actions_rotate = 1
 			else:
 				self.right_then_left_rotation(node=node, relative_direction=relative_direction)
+				count_balance_actions_rotate = 2
 
 		# Attribute update #
 		# height update
 		node.height_manager()
+
+		return count_balance_actions_rotate  # TODO: make it more abstract
 
 	def right_rotation(self, node: AVLNode, relative_direction: str, is_partial: bool = False):
 
@@ -501,9 +509,10 @@ class AVLTree(object):
 test_import = [9,8,7,6,36,30,31,90,95,96,4,3,2]
 
 t = AVLTree()
-
+count = 0
 for num in test_import:
-	t.insert(num, "")
+	count += t.insert(num, "")
 	t.printt()
-
+print(count)
 # t.printt()
+
