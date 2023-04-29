@@ -1,3 +1,5 @@
+import random
+
 #username - complete info
 #id1      - complete info 
 #name1    - complete info 
@@ -26,7 +28,7 @@ class AVLNode(object):
 		self.size = 0
 
 	def __repr__(self):
-		return f"key: {self.key} | h: {self.height} | BF: {self.get_bf()} | size: {self.get_size()}"
+		return f"key: {self.key} | h: {self.height} | BF: {self.get_bf()} | size: {self.get_size()}" if self.is_real_node() else "Dummy Node"
 
 	"""returns the key
 	@rtype: int or None
@@ -87,7 +89,7 @@ class AVLNode(object):
 		return self.size
 
 	def get_bf(self):
-		return self.left.height - self.right.height
+		return self.left.height - self.right.height if (self.left and self.height) else -99
 
 	"""sets key
 	@type key: int or None
@@ -240,14 +242,9 @@ class AVLTree(object):
 			else:
 				self.right_then_left_rotation(node=node)
 
-		# attribute update
+		# Attribute update #
 		# height update
-		node.height = 0  # node (=B) is a leaf now (node.height was 1, wasn't updated after BST insertion)
-		# note that we dont need to update nodes.parent.height here. (it will be updated in the next loop interation)
-
-	# TODO: delete these comments:
-	# (A's child (was node's grandchild before rotation, and after BST insertion) (new inserted node) remains a leaf, so no height change.
-	# A's height (A is node's son before rotation, and after BST insertion) remains 1 (A was a leaf before the BST insertion, and was updated to 1 after BST insertion)
+		node.height_manager()
 
 	def right_rotation(self, node: AVLNode, is_partial: bool = False):
 
@@ -485,13 +482,11 @@ class AVLTree(object):
 		return i
 
 
+test_import = [8, 9, 10, 3, 2, 1, 100, 36, 30, 31, 11, 12, 13, 14, 15]
+
 t = AVLTree()
-# t.insert(7, "")
-t.insert(8, "")
-t.insert(9, "")
-t.insert(10, "")
-# t.insert(8, "")
-t.insert(3, "")
-t.insert(2, "")
-t.insert(7, "")
+
+for num in test_import:
+	t.insert(num, "")
+
 t.printt()
