@@ -205,6 +205,14 @@ class AVLTree(object):
 	@returns: the value corresponding to key.
 	"""
 	def search(self, key):
+		curr_node = self.root
+		while curr_node.is_real_node():
+			if curr_node.key == key:
+				return curr_node
+			if curr_node.key > key:
+				curr_node = curr_node.left
+			else:
+				curr_node = curr_node.right
 		return None
 
 	def set_as_child_after_rotation(self, node: AVLNode, relative_direction: str):
@@ -533,7 +541,7 @@ class AVLTree(object):
 #### Testing ####
 #################
 
-
+t1 = AVLTree()
 small_test_import = [9, 8, 7, 10, 11]
 big_test_import = [9, 8, 7, 6, 36, 30, 31, 90, 95, 96, 4, 3, 2]
 
@@ -545,8 +553,7 @@ def create_rand_keys(n: int = 100):
 	return rand_test
 
 
-def test_tree(keys, multiple_prints: bool = False):
-	t = AVLTree()
+def test_tree(t: AVLTree, keys, multiple_prints: bool = False):
 
 	for key in keys:
 		t.insert(key=key, val="")
@@ -556,11 +563,14 @@ def test_tree(keys, multiple_prints: bool = False):
 		t.printt()
 
 
-for _ in range(0, 100):
-	t = AVLTree()
-	rand_keys = create_rand_keys(n=100)
-	for i in rand_keys:
-		t.insert(i, "")
-	print(t.root)
+test_tree(t=t1, keys=big_test_import)
+print(t1.search(key=90))
+#
+# for _ in range(0, 100):
+# 	t = AVLTree()
+# 	rand_keys = create_rand_keys(n=100)
+# 	for i in rand_keys:
+# 		t.insert(i, "")
+# 	print(t.root)
 
 
