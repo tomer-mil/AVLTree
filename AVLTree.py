@@ -9,7 +9,6 @@ import random
 
 """A class representing a node in an AVL tree"""
 
-
 class AVLNode(object):
     """Constructor, you are allowed to add more fields.
     @type key: int or None
@@ -202,8 +201,20 @@ class AVLNode(object):
 
         self.right = right_node
         self.left = left_node
-
-
+        
+    def get_subtree_min(self):
+        curr_node = self
+        while curr_node.left.is_real_node():
+            curr_node = curr_node.left
+        return curr_node
+    
+    def get_subtree_max(self):
+        curr_node = self
+        while curr_node.right.is_real_node():
+            curr_node = curr_node.right
+        return curr_node
+            
+		
 """
 A class implementing an AVL tree.
 """
@@ -510,26 +521,29 @@ class AVLTree(object):
         right_tree = AVLTree()
 
         left_tree.root = node.left
-        node.left.parent = left_tree.root
         right_tree.root = node.right
-        node.right.parent = right_tree.root
 
         curr_node = node
 
-        while curr_node:  # Up till the root
+        while curr_node.parent:  # Up till the root
             temp_tree = AVLTree()
             if curr_node.get_relative_direction() == "right":
-                temp_tree.insert(key=curr_node.parent.right.key, val=curr_node.parent.right.val)
-                left_tree.join(temp_tree, curr_node, left_tree)
+                temp_tree.root = curr_node.parent.left 
+                left_tree.join(tree=temp_tree, key=curr_node.parent.key, val=curr_node.parent.val)
 
             if curr_node.get_relative_direction() == "left":
-                right_tree.join()
-
-
+                temp_tree.root = curr_node.parent.right 
+                right_tree.join(tree=temp_tree, key=curr_node.parent.key, val=curr_node.parent.val)
 
             curr_node = curr_node.parent
+        
+		#  maintain min and max for the new splitted trees
+        right_tree.max = self.max
+        right_tree.min = right_tree.root.get_subtree_min()
+        left_tree.min = self.min
+        left_tree.max =  right_tree.root.get_subtree_max()
 
-        return None
+        return [left_tree, right_tree]
 
     def get_sub_tree(self, higher_tree_relative_direction: str, sub_tree_height: int):
 
@@ -538,13 +552,11 @@ class AVLTree(object):
         # need to start walking up the tree starting from the maximum.
 
         if higher_tree_relative_direction == "left":
-            curr_node = self.max
+            while curr_node.right.height <= sub_tree_height:
+                curr_node = curr_node.right
         else:  # higher_tree_relative_direction == "right"
-            curr_node = self.min
-
-        # going straight up the tree
-        while curr_node.parent.height <= sub_tree_height:
-            curr_node = curr_node.parent
+            while curr_node.leftt.height <= sub_tree_height:
+                curr_node = curr_node.left
 
         return curr_node  # this is the sub tree root!
 
@@ -807,10 +819,10 @@ def test_tree(t: AVLTree, keys, multiple_prints: bool = False, with_printing: bo
 
     return t
 
-rand_small = create_rand_keys(n=300, start=0, end=500)
-rand_big = create_rand_keys(n=1000, start=600, end=10000)
+# rand_small = create_rand_keys(n=300, start=0, end=500)
+# rand_big = create_rand_keys(n=1000, start=600, end=10000)
 
-t1 = test_tree(t=t1, keys=rand_small, with_printing=False)
-t2 = test_tree(t=t2, keys=rand_big, with_printing=False)
+# t1 = test_tree(t=t1, keys=rand_small, with_printing=False)
+# t2 = test_tree(t=t2, keys=rand_big, with_printing=False)
 
-t1.join(tree=t2, key=550, val="")
+# t1.join(tree=t2, key=550, val="")
