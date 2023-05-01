@@ -248,7 +248,7 @@ class AVLTree(object):
 	@returns: the number of rebalancing operation due to AVL rebalancing
 	"""
 	def insert(self, key, val):
-		count_balance_actions = 0
+
 		new_node = AVLNode(key=key, value=val)
 
 		self.BST_insert(node=new_node)
@@ -259,31 +259,32 @@ class AVLTree(object):
 		if self.should_update_max(node=new_node):
 			self.max = new_node
 
-		curr_node = new_node.get_parent()
-
 		# Walking up the tree
-		while curr_node:  # while curr_node's child (left or right) is not the root
+		balance_actions = self.rebalance_up(start_node=new_node.get_parent())
 
-			# update node attributes after BST insertion
-			did_height_change = curr_node.height_manager()
-			# curr_node.update_size()
+		#
+		# while curr_node:  # while curr_node's child (left or right) is not the root
+		#
+		# 	# update node attributes after BST insertion
+		# 	did_height_change = curr_node.height_manager()
+		# 	# curr_node.update_size()
+		#
+		# 	curr_node_abs_bf = abs(curr_node.get_bf())
+		#
+		# 	if not did_height_change and curr_node_abs_bf < 2:
+		# 		curr_node.update_size()
+		# 		return count_balance_actions
+		#
+		# 	elif did_height_change and curr_node_abs_bf < 2:
+		# 		curr_node.update_size()
+		# 		curr_node = curr_node.get_parent()
+		# 		count_balance_actions += 1
+		#
+		# 	else:  # then: curr_node_abs_bf == 2:
+		# 		count_balance_actions += self.rotate(node=curr_node)
+		# 		return count_balance_actions
 
-			curr_node_abs_bf = abs(curr_node.get_bf())
-
-			if not did_height_change and curr_node_abs_bf < 2:
-				curr_node.update_size()
-				return count_balance_actions
-
-			elif did_height_change and curr_node_abs_bf < 2:
-				curr_node.update_size()
-				curr_node = curr_node.get_parent()
-				count_balance_actions += 1
-
-			else:  # then: curr_node_abs_bf == 2:
-				count_balance_actions += self.rotate(node=curr_node)
-				return count_balance_actions
-
-		return count_balance_actions
+		return balance_actions
 
 	def rotate(self, node: AVLNode):
 
@@ -477,6 +478,10 @@ class AVLTree(object):
 	dictionary larger than node.key.
 	"""
 	def split(self, node):
+
+		left_tree = AVLTree()
+		right_tree = AVLTree()
+
 		return None
 
 	"""joins self with key and another AVLTree
@@ -505,6 +510,28 @@ class AVLTree(object):
 		# rebalance from x upwards
 
 		return height_difference
+
+	def rebalance_up(self, start_node: AVLNode) -> int:
+		count_balance_actions = 0
+
+		while start_node:  # while start_node is not None, meaning we reached the root
+
+			did_height_change = start_node.height_manager()
+
+			node_abs_bf = abs(start_node.get_bf())
+
+			if not did_height_change and node_abs_bf < 2:
+				start_node.update_size()
+				return count_balance_actions
+
+			elif did_height_change and node_abs_bf < 2:
+				start_node.update_size()
+				start_node = start_node.get_parent()
+				count_balance_actions += 1
+
+			else:  # then: node_abs_bf == 2:
+				count_balance_actions += self.rotate(node=start_node)
+				return count_balance_actions
 
 	"""compute the rank of node in the self
 	@type node: AVLNode
