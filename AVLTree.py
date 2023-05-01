@@ -214,8 +214,8 @@ class AVLTree(object):
     Constructor, you are allowed to add more fields.
     """
 
-    def __init__(self):
-        self.root = AVLNode()  # initializes with dummy node
+    def __init__(self, root: AVLNode = AVLNode()):
+        self.root = root  # initializes with dummy node
         self.min = None
         self.max = None
 
@@ -509,6 +509,26 @@ class AVLTree(object):
         left_tree = AVLTree()
         right_tree = AVLTree()
 
+        left_tree.root = node.left
+        node.left.parent = left_tree.root
+        right_tree.root = node.right
+        node.right.parent = right_tree.root
+
+        curr_node = node
+
+        while curr_node:  # Up till the root
+            temp_tree = AVLTree()
+            if curr_node.get_relative_direction() == "right":
+                temp_tree.insert(key=curr_node.parent.right.key, val=curr_node.parent.right.val)
+                left_tree.join(temp_tree, curr_node, left_tree)
+
+            if curr_node.get_relative_direction() == "left":
+                right_tree.join()
+
+
+
+            curr_node = curr_node.parent
+
         return None
 
     def get_sub_tree(self, higher_tree_relative_direction: str, sub_tree_height: int):
@@ -541,13 +561,14 @@ class AVLTree(object):
         sub_tree_root = self.get_sub_tree(higher_tree_relative_direction, sub_tree_height)
 
         # step 2: connect between the new node (x), the sub tree root (b), and the rest of the original tree (c- b's parent), and the other tree
+
         setattr(sub_tree_root.parent, shorter_tree_relative_direction, node)  # set x to be c's child
         node.parent = sub_tree_root.parent  # set c to be x's parent (x's relative direction=shorter_tree_relative_direction)
 
-        # TODO: create a new function the gets 2 trees and a node and does this: call it if the 2 original trees are at the same height +-1
         sub_tree_root.parent = node
         setattr(node, higher_tree_relative_direction, sub_tree_root)  # set b to be x's child
         setattr(node, shorter_tree_relative_direction, shorter_tree.root)  # set the shorter tree to be x's child
+
         shorter_tree.root.parent = node  # set x as the shorter tree's parent
 
         return node
@@ -566,6 +587,9 @@ class AVLTree(object):
     """
 
     def join(self, tree, key, val):
+
+        # TODO: maintain min/max when joining
+
         new_node = AVLNode(key=key, value=val)
 
         left_tree = self if self.root <= tree.root else tree
@@ -580,19 +604,6 @@ class AVLTree(object):
             right_tree.root.parent = new_node
 
             self.root = new_node
-
-        # new_node.height = 0 -> need rebalance
-
-        # if self.root <= tree.root:
-        # 	left_tree = self
-        # 	right_tree = tree
-        # else:
-        # 	right_tree = self
-        # 	left_tree = tree
-
-        # check who has smaller values
-
-        # is_left_higher = right_tree.root.height < left_tree.root.height
 
         else:
             if height_difference > 0:
@@ -796,38 +807,10 @@ def test_tree(t: AVLTree, keys, multiple_prints: bool = False, with_printing: bo
 
     return t
 
-
-#
-# test_tree(t=t1, keys=create_rand_keys(100000))
-# print(f"min: {t1.min}")
-# print(f"max: {t1.max}")
-# print(f"min_pred: {t1.predecessor(node=t1.min)}")
-# print(f"max_succ: {t1.successor(node=t1.max)}")
-
-
-# print(empty_t.predecessor(node=empty_t.root))
-# print(empty_t.successor(node=empty_t.root))
-# print(root_t.rank(node=root_t.root))
-# friend = t1.search(key=4)
-# print(friend)
-# print(t1.predecessor(node=friend))
-
 rand_small = create_rand_keys(n=300, start=0, end=500)
 rand_big = create_rand_keys(n=1000, start=600, end=10000)
-small = {0, 1, 4, 5, 6, 9, 11, 12, 13, 15, 16, 18, 19, 22, 24, 26, 27, 29, 30, 31, 32, 33, 34, 35, 36, 38, 39, 40, 41, 42, 44, 45, 46, 48, 49, 50, 53, 54, 56, 57, 58, 59, 60, 62, 63, 65, 66, 67, 68, 69, 72, 74, 76, 78, 79, 81, 82, 83, 84, 85, 88, 89, 91, 95, 99, 100, 102, 103, 104, 105, 107, 108, 109, 111, 112, 113, 115, 118, 119, 120, 121, 122, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 136, 137, 138, 139, 140, 142, 143, 144, 146, 147, 148, 149, 151, 155, 156, 157, 161, 162, 163, 164, 165, 166, 167, 171, 172, 173, 174, 176, 177, 179, 180, 181, 182, 183, 184, 187, 190, 191, 193, 195, 196, 197, 198, 200, 202, 203, 204, 206, 210, 212, 213, 214, 215, 218, 219, 220, 223, 224, 225, 226, 229, 230, 232, 233, 236, 237, 238, 240, 242, 243, 245, 246, 249, 251, 253, 254, 255, 258, 263, 265, 268, 269, 270, 273, 274, 276, 282, 283, 284, 285, 287, 289, 290, 293, 294, 298, 299, 302, 304, 306, 307, 310, 311, 312, 319, 320, 323, 325, 326, 327, 328, 331, 333, 337, 338, 341, 342, 344, 346, 349, 352, 353, 355, 357, 358, 359, 360, 361, 363, 364, 366, 370, 372, 373, 374, 377, 379, 380, 381, 382, 384, 385, 388, 390, 391, 392, 395, 397, 400, 401, 404, 405, 406, 409, 410, 411, 412, 413, 418, 419, 420, 421, 422, 425, 428, 429, 431, 432, 433, 440, 443, 444, 445, 446, 448, 449, 452, 453, 455, 456, 457, 458, 460, 461, 462, 464, 465, 467, 468, 470, 471, 475, 478, 479, 481, 483, 484, 485, 486, 487, 488, 489, 491, 492, 493, 494, 497, 499}
-big = {7171, 8718, 8728, 1056, 7208, 1072, 5169, 8754, 9264, 2611, 4667, 9279, 4680, 9291, 4177, 5716, 7257, 7775, 4194, 3687, 8298, 4715, 4724, 2682, 2172, 4252, 7324, 4254, 9888, 3756, 1709, 7861, 1207, 9921, 708, 1733, 8389, 3787, 3795, 2774, 2776, 5849, 2268, 3294, 6372, 8934, 5354, 5868, 1776, 3825, 9461, 7926, 5879, 2813, 766, 4356, 783, 3856, 4880, 6420, 4887, 3360, 2342, 8492, 4400, 4405, 9017, 827, 8528, 9555, 4443, 7539, 9589, 6522, 3453, 9601, 3458, 1921, 3969, 7049, 5525, 8598, 7064, 926, 3490, 2467, 8102, 7081, 7083, 8116, 1468, 1984, 9666, 6098, 1490, 9684, 8150, 3034, 1517, 6126}
-
-# print(f"small: {rand_small} \nbig: {rand_big}")
 
 t1 = test_tree(t=t1, keys=rand_small, with_printing=False)
 t2 = test_tree(t=t2, keys=rand_big, with_printing=False)
-# print(f"small: {t1.__repr__()}\nbig: {t2.__repr__()}")
-t1.join(tree=t2, key=550, val="")
-t1.printt()
 
-# for _ in range(0, 100):
-# 	t = AVLTree()
-# 	rand_keys = create_rand_keys(n=100)
-# 	for i in rand_keys:
-# 		t.insert(i, "")
-# 	print(t.root)
+t1.join(tree=t2, key=550, val="")
