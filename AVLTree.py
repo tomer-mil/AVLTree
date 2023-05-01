@@ -484,6 +484,54 @@ class AVLTree(object):
 
 		return None
 
+
+	def get_sub_tree(self, higher_tree_relative_direction: str, sub_tree_height: int):
+		# this part is allowing us abstruction.
+		# if the relative direction of the higher tree is right, then in order to get the correct sub-tree then we
+			# need to start walking up the tree starting from the maximum.
+		if higher_tree_relative_direction == "left":
+			curr_node = self.max 
+			subtree_original_relative_direction = "right"
+		else:  # higher_tree_relative_direction == "right"
+			curr_node = self.min
+			subtree_original_relative_direction = "left"
+		
+		# check if we need subtree height to be smaller_tree.height or smaller_tree.height-1
+		# this check is supposed to ensure that the subtree root is not the actual root of the higher tree
+		if getattr(self, subtree_original_relative_direction).height < self.root.height - 1: 
+			sub_tree_height = sub_tree_height - 1
+		
+		# going straight up the tree
+		while sub_tree_height > 0:
+			curr_node = curr_node.parent 
+			sub_tree_height -= 1
+
+		return curr_node  # this is the sub tree root!
+
+	# TODO: change function name
+	""" 
+	@pre: self is the higher tree
+	"""
+	def join_everything(self, shorter_tree, node: AVLNode, higher_tree_relative_direction: str, sub_tree_height: int):
+		if higher_tree_relative_direction == "left":
+			shorter_tree_relative_direction = "right"
+		else:  # higher_tree_insert_direction == "right"
+			shorter_tree_relative_direction = "left"
+
+		# find the relevant sub tree root based on it's future relative direction
+		sub_tree_root = self.get_sub_tree(higher_tree_relative_direction, sub_tree_height)
+
+		# step 2: connect between the new node (x), the sub tree root (b), and the rest of the original tree (c- b's parent), and the other tree
+		setattr(sub_tree_root.parent, shorter_tree_relative_direction, node) # set x to be c's child
+		node.parent = sub_tree_root.parent # set c to be x's parent (x's relatiove direction=shorter_tree_relative_direction)
+		
+		# TODO: create a new fucntion the gets 2 trees and a node and does this: call it if the 2 original trees are at the same height +-1
+		sub_tree_root.parent = node 
+		setattr(node, higher_tree_relative_direction, sub_tree_root) # set b to be x's child
+		setattr(node, shorter_tree_relative_direction, shorter_tree.root) # set the shorter tree to be x's child
+		shorter_tree.root.parent = node # set x as the shorter tree's parent
+		return node
+	
 	"""joins self with key and another AVLTree
 	@type tree: AVLTree 
 	@param tree: a dictionary to be joined with self
@@ -497,19 +545,43 @@ class AVLTree(object):
 	@returns: the absolute value of the difference between the height of the AVL trees joined
 	"""
 	def join(self, tree, key, val):
-		height_difference = abs(self.root.height - tree.root.height) + 1
+		height_difference = abs(self.root.height - tree.root.height)
+		
+		new_node = AVLNode(key=key, value=val)
 
-		# check who is smaller
+		# check who has smaller values
+		if self.root <= tree.root:
+			left_tree = self
+			right_tree = tree
+		else:
+			right_tree = self
+			left_tree = tree
 
+		if height_difference <= 1:
+			new_node.left = left_tree
+			left_tree.root.parent = new_node
+			new_node.right = right_tree
+			right_tree.root.parent = new_node
+			# new_node.height = 0 -> need rebalance
 
-		# check who is higher (let's say t1)
-
-		# get sub tree of t1 in height=t2.height or t2.height-1 where b is its root
-		# set t2 and b as children of x
-		# set the original parent of b to be the parent of x
-		# rebalance from x upwards
+		else:
+			if right_tree.root.height < left_tree.root.height: 
+				sub_tree_height = right_tree.root.height
+				higher_tree_relative_direction = "left"
+				higher_tree = left_tree
+				shorter_tree = right_tree
+			else:  # right_tree.root.height > left_tree.root.height   
+				sub_tree_height = left_tree.root.height
+				higher_tree_relative_direction = "right"
+				higher_tree = right_tree
+				shorter_tree = left_tree
+			new_node = higher_tree.join_everything(shorter_tree=shorter_tree, node=new_node, 
+					  higher_tree_relative_direction=higher_tree_relative_direction, sub_tree_height=sub_tree_height)
+		
+		# rebalance from x(=new_node) upwards
 
 		return height_difference
+
 
 	def rebalance_up(self, start_node: AVLNode) -> int:
 		count_balance_actions = 0
@@ -532,7 +604,7 @@ class AVLTree(object):
 			else:  # then: node_abs_bf == 2:
 				count_balance_actions += self.rotate(node=start_node)
 				return count_balance_actions
-
+	
 	"""compute the rank of node in the self
 	@type node: AVLNode
 	@pre: node is in self
