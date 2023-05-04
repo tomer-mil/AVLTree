@@ -529,15 +529,15 @@ class AVLTree(object):
             temp_tree = AVLTree()
             if curr_node.get_relative_direction() == "right":
                 temp_tree.root = curr_node.parent.left 
-                left_tree.join(tree=temp_tree, key=curr_node.parent.key, val=curr_node.parent.val)
+                left_tree.join(tree=temp_tree, key=curr_node.parent.key, val=curr_node.parent.value)
 
             if curr_node.get_relative_direction() == "left":
                 temp_tree.root = curr_node.parent.right 
-                right_tree.join(tree=temp_tree, key=curr_node.parent.key, val=curr_node.parent.val)
+                right_tree.join(tree=temp_tree, key=curr_node.parent.key, val=curr_node.parent.value)
 
             curr_node = curr_node.parent
         
-		#  maintain min and max for the new splitted trees
+        #  maintain min and max for the new splitted trees
         right_tree.max = self.max
         right_tree.min = right_tree.root.get_subtree_min()
         left_tree.min = self.min
@@ -550,6 +550,7 @@ class AVLTree(object):
         # this part is allowing us abstraction.
         # if the relative direction of the higher tree is right, then in order to get the correct sub-tree then we
         # need to start walking up the tree starting from the maximum.
+
         curr_node = self.root
         if higher_tree_relative_direction == "left":
             while curr_node.height > sub_tree_height:
@@ -813,16 +814,25 @@ def test_tree(t: AVLTree, keys, multiple_prints: bool = False, with_printing: bo
         t.insert(key=key, val="")
         if multiple_prints and with_printing:
             t.printt()
+            print("################################")
 
     if with_printing and not multiple_prints:
         t.printt()
+        print("################################")
 
     return t
 
-# rand_small = create_rand_keys(n=300, start=0, end=500)
-# rand_big = create_rand_keys(n=1000, start=600, end=10000)
 
-# t1 = test_tree(t=t1, keys=rand_small, with_printing=False)
-# t2 = test_tree(t=t2, keys=rand_big, with_printing=False)
+rand_small = create_rand_keys(n=50, start=0, end=500)
 
-# t1.join(tree=t2, key=550, val="")
+exception_set = {0, 261, 6, 264, 138, 12, 270, 400, 18, 20, 404, 278, 151, 152, 281, 26, 21, 284, 287, 162, 166, 294, 425, 41, 302, 182, 310, 443, 315, 61, 66, 67, 453, 71, 328, 73, 74, 330, 329, 213, 476, 92, 489, 235, 366, 498, 373, 120, 250, 253}
+
+print(f"rand small: {rand_small}")
+t1 = test_tree(t=t1, keys=exception_set)
+rand_node = t1.select(i=15)
+split_trees = t1.split(node=rand_node)
+split_trees[0].printt()
+print("################################")
+split_trees[1].printt()
+print("################################")
+print(f"split node: {rand_node}")
