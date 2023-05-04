@@ -550,15 +550,15 @@ class AVLTree(object):
         # this part is allowing us abstraction.
         # if the relative direction of the higher tree is right, then in order to get the correct sub-tree then we
         # need to start walking up the tree starting from the maximum.
-
+        curr_node = self.root
         if higher_tree_relative_direction == "left":
-            while curr_node.right.height <= sub_tree_height:
+            while curr_node.height > sub_tree_height:
                 curr_node = curr_node.right
         else:  # higher_tree_relative_direction == "right"
-            while curr_node.leftt.height <= sub_tree_height:
+            while curr_node.height < sub_tree_height:
                 curr_node = curr_node.left
 
-        return curr_node  # this is the sub tree root!
+        return curr_node  # this is the sub-tree root!
 
     # TODO: change function name
     """ 
