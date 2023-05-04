@@ -523,20 +523,31 @@ class AVLTree(object):
         left_tree.root = node.left
         right_tree.root = node.right
 
-        curr_node = node
+        curr_node = node.parent
 
         while curr_node.parent:  # Up till the root
             temp_tree = AVLTree()
+
             if curr_node.get_relative_direction() == "right":
-                temp_tree.root = curr_node.parent.left 
+
+                temp_node = AVLNode(key=curr_node.parent.left.key, value=curr_node.parent.left.value)
+
+                temp_node.left, temp_node.right = curr_node.parent.left.left, curr_node.parent.left.right
+                temp_tree.root = temp_node
+
                 left_tree.join(tree=temp_tree, key=curr_node.parent.key, val=curr_node.parent.value)
 
-            if curr_node.get_relative_direction() == "left":
-                temp_tree.root = curr_node.parent.right 
+            else:  # curr_node.get_relative_direction() == "left":
+
+                temp_node = AVLNode(key=curr_node.parent.right.key, value=curr_node.parent.right.value)
+
+                temp_node.left, temp_node.right = curr_node.parent.right.left, curr_node.parent.right.right
+                temp_tree.root = temp_node
+
                 right_tree.join(tree=temp_tree, key=curr_node.parent.key, val=curr_node.parent.value)
 
             curr_node = curr_node.parent
-        
+
         #  maintain min and max for the new splitted trees
         right_tree.max = self.max
         right_tree.min = right_tree.root.get_subtree_min()
@@ -545,14 +556,15 @@ class AVLTree(object):
 
         return [left_tree, right_tree]
 
-    def get_sub_tree(self, higher_tree_relative_direction: str, sub_tree_height: int):
+    def get_sub_tree(self, direction: str, sub_tree_height: int):
 
         # this part is allowing us abstraction.
         # if the relative direction of the higher tree is right, then in order to get the correct sub-tree then we
         # need to start walking up the tree starting from the maximum.
 
         curr_node = self.root
-        if higher_tree_relative_direction == "left":
+
+        if direction == "right":
             while curr_node.height > sub_tree_height:
                 curr_node = curr_node.right
         else:  # higher_tree_relative_direction == "right"
@@ -560,31 +572,6 @@ class AVLTree(object):
                 curr_node = curr_node.left
 
         return curr_node  # this is the sub-tree root!
-
-    # TODO: change function name
-    """ 
-    @pre: self is the higher tree
-    """
-
-    def join_everything(self, shorter_tree, node: AVLNode, higher_tree_relative_direction: str, sub_tree_height: int):
-
-        shorter_tree_relative_direction = "left" if higher_tree_relative_direction == "right" else "right"
-
-        # find the relevant sub tree root based on it's future relative direction
-        sub_tree_root = self.get_sub_tree(higher_tree_relative_direction, sub_tree_height)
-
-        # step 2: connect between the new node (x), the sub tree root (b), and the rest of the original tree (c- b's parent), and the other tree
-
-        setattr(sub_tree_root.parent, shorter_tree_relative_direction, node)  # set x to be c's child
-        node.parent = sub_tree_root.parent  # set c to be x's parent (x's relative direction=shorter_tree_relative_direction)
-
-        sub_tree_root.parent = node
-        setattr(node, higher_tree_relative_direction, sub_tree_root)  # set b to be x's child
-        setattr(node, shorter_tree_relative_direction, shorter_tree.root)  # set the shorter tree to be x's child
-
-        shorter_tree.root.parent = node  # set x as the shorter tree's parent
-
-        return node
 
     """joins self with key and another AVLTree
     @type tree: AVLTree 
@@ -602,43 +589,101 @@ class AVLTree(object):
     def join(self, tree, key, val):
 
         # TODO: maintain min/max when joining
+        pivot_node = AVLNode(key=key, value=val)
 
-        new_node = AVLNode(key=key, value=val)
-
-        left_tree = self if self.root <= tree.root else tree
-        right_tree = tree if self.root <= tree.root else self
-
-        height_difference = left_tree.root.height - right_tree.root.height  # if >0: left higher
-
-        if abs(height_difference) <= 1:  # "Simple" joining
-            new_node.left = left_tree.root
-            left_tree.root.parent = new_node
-            new_node.right = right_tree.root
-            right_tree.root.parent = new_node
-
-            self.root = new_node
-
+        if self.root.key:
+            join_direction = "left" if self.root.key > pivot_node.key else "right"
+        elif tree.root.key:
+            join_direction = "left" if tree.root.key < pivot_node.key else "right"
         else:
-            if height_difference > 0:
-                sub_tree_height = right_tree.root.height  # h
-                new_node = left_tree.join_everything(shorter_tree=right_tree,
-                                                node=new_node,
-                                                higher_tree_relative_direction="left",
-                                                sub_tree_height=sub_tree_height)
+            self.root = pivot_node
+            return 0
 
-                self.root = left_tree.root
-            else:  # right_tree.root.height > left_tree.root.height
-                sub_tree_height = left_tree.root.height
-                new_node = right_tree.join_everything(shorter_tree=left_tree,
-                                                node=new_node,
-                                                higher_tree_relative_direction="right",
-                                                sub_tree_height=sub_tree_height)
-                self.root = right_tree.root
+        if join_direction == "right":
+            height_difference = self.join_right(other=tree, pivot_node=pivot_node)
+        else:
+            height_difference = self.join_left(other=tree, pivot_node=pivot_node)
 
-        self.rebalance_up(start_node=new_node)
-        # rebalance from x(=new_node) upwards
+        self.root = pivot_node
+        self.rebalance_up(start_node=pivot_node)  # rebalance from x(=new_node) upwards
 
         return height_difference
+
+    def join_left(self, other, pivot_node):
+        has_dummy = not (other.root.is_real_node() and self.root.is_real_node())
+        height_difference = self.root.height - other.root.height
+
+        #  Simple joining
+        if abs(height_difference) <= 1 or has_dummy:
+            self.root.parent = pivot_node
+            other.root.parent = pivot_node
+
+            pivot_node.right = self.root
+            pivot_node.left = other.root
+
+        elif height_difference > 0:  # self is higher
+            sub_tree = self.get_sub_tree(direction="left", sub_tree_height=other.root.height)
+
+            pivot_node.left = other.root
+            other.root.parent = pivot_node
+
+            pivot_node.right = sub_tree
+            pivot_node.parent = sub_tree.parent
+            sub_tree.parent.left = pivot_node
+
+            sub_tree.parent = pivot_node
+
+        else:  # other is higher
+            sub_tree = other.get_sub_tree(direction="right", sub_tree_height=self.root.height)
+
+            pivot_node.right = self.root
+            self.root.parent = pivot_node
+
+            pivot_node.left = sub_tree
+            pivot_node.parent = sub_tree.parent
+            sub_tree.parent.right = pivot_node
+
+            sub_tree.parent = pivot_node
+
+        return abs(height_difference)
+
+    def join_right(self, other, pivot_node):
+        has_dummy = not (other.root.is_real_node() and self.root.is_real_node())
+        height_difference = self.root.height - other.root.height
+
+        #  Simple joining
+        if abs(height_difference) <= 1 or has_dummy:
+            self.root.parent = pivot_node
+            other.root.parent = pivot_node
+
+            pivot_node.left = self.root
+            pivot_node.right = other.root
+
+        elif height_difference > 0:  # self is higher
+            sub_tree = self.get_sub_tree(direction="right", sub_tree_height=other.root.height)
+
+            pivot_node.right = other.root
+            other.root.parent = pivot_node
+
+            pivot_node.left = sub_tree
+            pivot_node.parent = sub_tree.parent
+            sub_tree.parent.right = pivot_node
+
+            sub_tree.parent = pivot_node
+
+        else:  # other is higher
+            sub_tree = other.get_sub_tree(direction="left", sub_tree_height=self.root.height)
+
+            pivot_node.left = self.root
+            self.root.parent = pivot_node
+
+            pivot_node.right = sub_tree
+            pivot_node.parent = sub_tree.parent
+            sub_tree.parent.left = pivot_node
+
+            sub_tree.parent = pivot_node
+
+        return abs(height_difference)
 
     def rebalance_up(self, start_node: AVLNode) -> int:
         count_balance_actions = 0
@@ -830,9 +875,13 @@ exception_set = {0, 261, 6, 264, 138, 12, 270, 400, 18, 20, 404, 278, 151, 152, 
 print(f"rand small: {rand_small}")
 t1 = test_tree(t=t1, keys=exception_set)
 rand_node = t1.select(i=15)
+
 split_trees = t1.split(node=rand_node)
 split_trees[0].printt()
+
 print("################################")
+
 split_trees[1].printt()
+
 print("################################")
 print(f"split node: {rand_node}")
