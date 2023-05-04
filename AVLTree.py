@@ -523,7 +523,7 @@ class AVLTree(object):
         left_tree.root = node.left
         right_tree.root = node.right
 
-        curr_node = node.parent
+        curr_node = node
 
         while curr_node.parent:  # Up till the root
             temp_tree = AVLTree()
@@ -591,13 +591,15 @@ class AVLTree(object):
         # TODO: maintain min/max when joining
         pivot_node = AVLNode(key=key, value=val)
 
-        if self.root.key:
-            join_direction = "left" if self.root.key > pivot_node.key else "right"
-        elif tree.root.key:
-            join_direction = "left" if tree.root.key < pivot_node.key else "right"
-        else:
-            self.root = pivot_node
-            return 0
+        has_empty = self.is_empty() or tree.is_empty()
+
+        if has_empty:  # Quick exit: one of the trees is empty
+            height_difference = abs(self.root.height - tree.root.height) + 1
+            self.join_with_dummy(tree=tree, pivot_node=pivot_node)
+            return height_difference
+
+        # Both trees are not empty
+        join_direction = "left" if self.root.key > pivot_node.key else "right"
 
         if join_direction == "right":
             height_difference = self.join_right(other=tree, pivot_node=pivot_node)
@@ -608,6 +610,15 @@ class AVLTree(object):
         self.rebalance_up(start_node=pivot_node)  # rebalance from x(=new_node) upwards
 
         return height_difference
+
+    def join_with_dummy(self, tree, pivot_node):
+        if not tree.is_empty():
+            tree.insert(key=pivot_node.key, val=pivot_node.value)
+            self.set_as_other_tree(other=tree)
+
+        else:
+            self.insert(key=pivot_node.key, val=pivot_node.value)
+
 
     def join_left(self, other, pivot_node):
         has_dummy = not (other.root.is_real_node() and self.root.is_real_node())
@@ -645,7 +656,7 @@ class AVLTree(object):
 
             sub_tree.parent = pivot_node
 
-        return abs(height_difference)
+        return abs(height_difference) + 1
 
     def join_right(self, other, pivot_node):
         has_dummy = not (other.root.is_real_node() and self.root.is_real_node())
@@ -683,7 +694,7 @@ class AVLTree(object):
 
             sub_tree.parent = pivot_node
 
-        return abs(height_difference)
+        return abs(height_difference) + 1
 
     def rebalance_up(self, start_node: AVLNode) -> int:
         count_balance_actions = 0
@@ -706,6 +717,12 @@ class AVLTree(object):
             else:  # then: node_abs_bf == 2:
                 count_balance_actions += self.rotate(node=start_node)
                 return count_balance_actions
+
+    def set_as_other_tree(self, other):
+        self.root = other.root
+        self.max = other.max
+        self.min = other.min
+
 
     """compute the rank of node in the self
     @type node: AVLNode
@@ -870,13 +887,17 @@ def test_tree(t: AVLTree, keys, multiple_prints: bool = False, with_printing: bo
 
 rand_small = create_rand_keys(n=50, start=0, end=500)
 
-exception_set = {0, 261, 6, 264, 138, 12, 270, 400, 18, 20, 404, 278, 151, 152, 281, 26, 21, 284, 287, 162, 166, 294, 425, 41, 302, 182, 310, 443, 315, 61, 66, 67, 453, 71, 328, 73, 74, 330, 329, 213, 476, 92, 489, 235, 366, 498, 373, 120, 250, 253}
+exception_set = {131, 387, 259, 389, 265, 138, 267, 406, 407, 283, 28, 157, 159, 416, 164, 421, 423, 298, 428, 430, 303, 176, 182, 439, 56, 189, 317, 325, 455, 328, 74, 458, 204, 333, 205, 83, 473, 219, 476, 93, 479, 351, 482, 357, 235, 363, 494, 374, 247, 121}
 
 print(f"rand small: {rand_small}")
 t1 = test_tree(t=t1, keys=exception_set)
-rand_node = t1.select(i=15)
+rand_node = t1.select(i=23)
 
 split_trees = t1.split(node=rand_node)
+print(f"split node: {rand_node}")
+
+print("################################")
+
 split_trees[0].printt()
 
 print("################################")
@@ -884,4 +905,3 @@ print("################################")
 split_trees[1].printt()
 
 print("################################")
-print(f"split node: {rand_node}")
