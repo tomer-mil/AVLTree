@@ -211,6 +211,10 @@ class AVLNode(object):
 
     def set_as_other_node(self, other, with_parent: bool = True):
 
+        if not other.is_real_node():
+            self.set_as_dummy()
+            return
+
         self.key = other.key
         self.value = other.value
         self.height = other.height
@@ -230,7 +234,15 @@ class AVLNode(object):
 
         self.parent = other.parent if with_parent else None
 
-		
+    def set_as_dummy(self):
+        self.key = None
+        self.value = None
+        self.height = -1
+        self.size = 0
+        self.right, self.left = None, None
+        self.parent = None
+
+
 """
 A class implementing an AVL tree.
 """
@@ -279,6 +291,8 @@ class AVLTree(object):
         return curr_node
 
     def init_min_max(self):
+        if self.is_empty():
+            return
         self.min = self.get_subtree_min()
         self.max = self.get_subtree_max()
 

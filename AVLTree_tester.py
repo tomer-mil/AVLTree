@@ -85,7 +85,7 @@ def test_split(tree: AVLTree, keys = None, pivot_node_rank: int = -1):
 
     print(DIVIDER)
 
-    print(f"expected values in tree: {sorted_rand_small[:pivot_node_rank]}")
+    print(f"expected values in tree: {sorted_rand_small[:pivot_node_rank - 1]}")
     split_trees[0].printt()
 
     print(DIVIDER)
