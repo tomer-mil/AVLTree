@@ -194,27 +194,42 @@ class AVLNode(object):
         return self.key is not None
 
     def add_dummy_nodes(self):
-        right_node = AVLNode(height=-1)
-        right_node.set_size(s=0)
+        self.add_left_dummy()
+        self.add_right_dummy()
 
-        left_node = AVLNode(height=-1)
-        left_node.set_size(s=0)
+    def add_left_dummy(self):
+        dummy = AVLNode(height=-1)
+        dummy.set_size(s=0)
 
-        self.right = right_node
-        self.left = left_node
-        
-    def get_subtree_min(self):
-        curr_node = self
-        while curr_node.left.is_real_node():
-            curr_node = curr_node.left
-        return curr_node
-    
-    def get_subtree_max(self):
-        curr_node = self
-        while curr_node.right.is_real_node():
-            curr_node = curr_node.right
-        return curr_node
-            
+        self.left = dummy
+
+    def add_right_dummy(self):
+        dummy = AVLNode(height=-1)
+        dummy.set_size(s=0)
+
+        self.right = dummy
+
+    def set_as_other_node(self, other, with_parent: bool = True):
+
+        self.key = other.key
+        self.value = other.value
+        self.height = other.height
+        self.size = other.size
+
+        if other.left.is_real_node():
+            self.left = other.left
+            self.left.parent = self
+        else:
+            self.add_left_dummy()
+
+        if other.right.is_real_node():
+            self.right = other.right
+            self.right.parent = self
+        else:
+            self.add_right_dummy()
+
+        self.parent = other.parent if with_parent else None
+
 		
 """
 A class implementing an AVL tree.
@@ -242,8 +257,30 @@ class AVLTree(object):
     def should_update_min(self, node: AVLNode):
         return node.key < self.min.key if self.min else True
 
+    def init_min(self):
+        self.min = self.get_sub_tree(direction="left", sub_tree_height=0)
+
     def should_update_max(self, node: AVLNode):
         return node.key > self.max.key if self.max else True
+
+    def init_max(self):
+        self.max = self.get_sub_tree(direction="right", sub_tree_height=0)
+
+    def get_subtree_min(self):
+        curr_node = self.root
+        while curr_node.left.is_real_node():
+            curr_node = curr_node.left
+        return curr_node
+
+    def get_subtree_max(self):
+        curr_node = self.root
+        while curr_node.right.is_real_node():
+            curr_node = curr_node.right
+        return curr_node
+
+    def init_min_max(self):
+        self.min = self.get_subtree_min()
+        self.max = self.get_subtree_max()
 
     """searches for a value in the dictionary corresponding to the key
     @type key: int
@@ -528,22 +565,33 @@ class AVLTree(object):
 
         while curr_node.parent:  # Up till the root
             temp_tree = AVLTree()
-
+            temp_node = AVLNode()
             if curr_node.get_relative_direction() == "right":
 
-                temp_node = AVLNode(key=curr_node.parent.left.key, value=curr_node.parent.left.value)
+                # temp_node = AVLNode(key=curr_node.parent.left.key, value=curr_node.parent.left.value)
 
-                temp_node.left, temp_node.right = curr_node.parent.left.left, curr_node.parent.left.right
+                temp_node.set_as_other_node(other=curr_node.parent.left, with_parent=False)
+                # temp_node.left, temp_node.right = curr_node.parent.left.left, curr_node.parent.left.right
+                # temp_node.left.parent = temp_node if temp_node.left.is_real_node() else None
+                # temp_node.right.parent = temp_node if temp_node.right.is_real_node() else None
+
                 temp_tree.root = temp_node
+                temp_tree.init_min_max()
 
                 left_tree.join(tree=temp_tree, key=curr_node.parent.key, val=curr_node.parent.value)
 
             else:  # curr_node.get_relative_direction() == "left":
 
-                temp_node = AVLNode(key=curr_node.parent.right.key, value=curr_node.parent.right.value)
+                # temp_node = AVLNode(key=curr_node.parent.right.key, value=curr_node.parent.right.value)
 
-                temp_node.left, temp_node.right = curr_node.parent.right.left, curr_node.parent.right.right
+                temp_node.set_as_other_node(other=curr_node.parent.right, with_parent=False)
+
+                # temp_node.left, temp_node.right = curr_node.parent.right.left, curr_node.parent.right.right
+                # temp_node.left.parent = temp_node if temp_node.left.is_real_node() else None
+                # temp_node.right.parent = temp_node if temp_node.right.is_real_node() else None
+
                 temp_tree.root = temp_node
+                temp_tree.init_min_max()
 
                 right_tree.join(tree=temp_tree, key=curr_node.parent.key, val=curr_node.parent.value)
 
@@ -551,9 +599,9 @@ class AVLTree(object):
 
         #  maintain min and max for the new splitted trees
         right_tree.max = self.max
-        right_tree.min = right_tree.root.get_subtree_min()
+        right_tree.init_min()
         left_tree.min = self.min
-        left_tree.max =  right_tree.root.get_subtree_max()
+        left_tree.init_max()
 
         return [left_tree, right_tree]
 
@@ -561,7 +609,6 @@ class AVLTree(object):
 
         # this part is allowing us abstraction.
         # if the relative direction of the higher tree is right, then in order to get the correct sub-tree then we
-        # need to start walking up the tree starting from the maximum.
 
         curr_node = self.root
 
@@ -614,11 +661,11 @@ class AVLTree(object):
 
     def join_with_dummy(self, tree, pivot_node):
 
-        if not tree.is_empty():
+        if not tree.is_empty():  # self is empty
             tree.insert(key=pivot_node.key, val=pivot_node.value)
             self.set_as_other_tree(other=tree)
 
-        else:
+        else:  # tree is empty
             self.insert(key=pivot_node.key, val=pivot_node.value)
 
     def join_left(self, other, pivot_node):
@@ -631,6 +678,7 @@ class AVLTree(object):
 
             pivot_node.right = self.root
             pivot_node.left = other.root
+            self.root = pivot_node
 
         elif height_difference > 0:  # self is higher
             sub_tree = self.get_sub_tree(direction="left", sub_tree_height=other.root.height)
@@ -669,6 +717,8 @@ class AVLTree(object):
 
             pivot_node.left = self.root
             pivot_node.right = other.root
+
+            self.root = pivot_node
 
         elif height_difference > 0:  # self is higher
             sub_tree = self.get_sub_tree(direction="right", sub_tree_height=other.root.height)
