@@ -615,8 +615,8 @@ class AVLTree(object):
         if direction == "right":
             while curr_node.height > sub_tree_height:
                 curr_node = curr_node.right
-        else:  # higher_tree_relative_direction == "right"
-            while curr_node.height < sub_tree_height:
+        else:  # direction == "left"
+            while curr_node.height > sub_tree_height:
                 curr_node = curr_node.left
 
         return curr_node  # this is the sub-tree root!

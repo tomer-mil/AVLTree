@@ -71,9 +71,10 @@ def test_split(tree: AVLTree, keys = None, pivot_node_rank: int = -1):
 
     rand_small = create_rand_keys(n=50, start=0, end=500) if not keys else keys
     pivot_node_rank = create_rand_keys(n=1, start=0, end=len(rand_small)) if pivot_node_rank == -1 else pivot_node_rank
+    sorted_rand_small = sorted(rand_small)
 
     print(f"tested list: {rand_small}")
-    print(f"tested list (sorted): {sorted(rand_small)}")
+    print(f"tested list (sorted): {sorted_rand_small}")
 
     test_import(t=tree, keys=rand_small)
 
@@ -84,10 +85,11 @@ def test_split(tree: AVLTree, keys = None, pivot_node_rank: int = -1):
 
     print(DIVIDER)
 
+    print(f"expected values in tree: {sorted_rand_small[:pivot_node_rank]}")
     split_trees[0].printt()
 
     print(DIVIDER)
-
+    print(f"expected values in tree: {sorted_rand_small[pivot_node_rank:]}")
     split_trees[1].printt()
 
     print(DIVIDER)
@@ -97,6 +99,6 @@ def test_split(tree: AVLTree, keys = None, pivot_node_rank: int = -1):
 
 # test_join(tree_1=t1, tree_2=t2, tree_1_keys=test_join_left, tree_2_keys=test_join_right, pivot_node_key=328)
 
-exception_list = {261, 391, 263, 141, 143, 401, 23, 408, 153, 409, 413, 158, 415, 417, 301, 430, 180, 312, 314, 187, 316, 444, 62, 320, 64, 457, 203, 78, 79, 81, 83, 85, 470, 87, 345, 220, 92, 222, 94, 482, 227, 104, 367, 124, 496, 498, 117, 374, 250, 252}
+exception_list = {128, 129, 138, 139, 270, 16, 273, 275, 149, 22, 153, 158, 415, 288, 416, 418, 293, 166, 165, 295, 429, 50, 180, 186, 315, 59, 58, 66, 452, 197, 201, 204, 77, 333, 463, 208, 465, 211, 469, 95, 352, 97, 354, 226, 99, 358, 486, 491, 375, 122}
 
-test_split(tree=t1, keys=exception_list, pivot_node_rank=37)
+test_split(tree=t1, keys=exception_list, pivot_node_rank=16)
