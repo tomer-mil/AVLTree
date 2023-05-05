@@ -270,13 +270,13 @@ class AVLTree(object):
         return node.key < self.min.key if self.min else True
 
     def init_min(self):
-        self.min = self.get_sub_tree(direction="left", sub_tree_height=0)
+        self.min = self.get_sub_tree_root(direction="left", sub_tree_height=0)
 
     def should_update_max(self, node: AVLNode):
         return node.key > self.max.key if self.max else True
 
     def init_max(self):
-        self.max = self.get_sub_tree(direction="right", sub_tree_height=0)
+        self.max = self.get_sub_tree_root(direction="right", sub_tree_height=0)
 
     def get_subtree_min(self):
         curr_node = self.root
@@ -619,7 +619,7 @@ class AVLTree(object):
 
         return [left_tree, right_tree]
 
-    def get_sub_tree(self, direction: str, sub_tree_height: int):
+    def get_sub_tree_root(self, direction: str, sub_tree_height: int):
 
         # this part is allowing us abstraction.
         # if the relative direction of the higher tree is right, then in order to get the correct sub-tree then we
@@ -628,10 +628,16 @@ class AVLTree(object):
 
         if direction == "right":
             while curr_node.height > sub_tree_height:
-                curr_node = curr_node.right
+                if not curr_node.right.is_real_node():  # Edge-case of sub_tree_height == 0 -> Reaches dummy-node
+                    curr_node = curr_node.left
+                else:
+                    curr_node = curr_node.right
         else:  # direction == "left"
             while curr_node.height > sub_tree_height:
-                curr_node = curr_node.left
+                if not curr_node.left.is_real_node():    # Edge-case of sub_tree_height == 0 -> Reaches dummy-node
+                    curr_node = curr_node.right
+                else:
+                    curr_node = curr_node.left
 
         return curr_node  # this is the sub-tree root!
 
@@ -696,7 +702,7 @@ class AVLTree(object):
             self.root = pivot_node
 
         elif height_difference > 0:  # self is higher
-            sub_tree = self.get_sub_tree(direction="left", sub_tree_height=other.root.height)
+            sub_tree = self.get_sub_tree_root(direction="left", sub_tree_height=other.root.height)
 
             pivot_node.left = other.root
             other.root.parent = pivot_node
@@ -708,7 +714,7 @@ class AVLTree(object):
             sub_tree.parent = pivot_node
 
         else:  # other is higher
-            sub_tree = other.get_sub_tree(direction="right", sub_tree_height=self.root.height)
+            sub_tree = other.get_sub_tree_root(direction="right", sub_tree_height=self.root.height)
 
             pivot_node.right = self.root
             self.root.parent = pivot_node
@@ -736,7 +742,7 @@ class AVLTree(object):
             self.root = pivot_node
 
         elif height_difference > 0:  # self is higher
-            sub_tree = self.get_sub_tree(direction="right", sub_tree_height=other.root.height)
+            sub_tree = self.get_sub_tree_root(direction="right", sub_tree_height=other.root.height)
 
             pivot_node.right = other.root
             other.root.parent = pivot_node
@@ -748,7 +754,7 @@ class AVLTree(object):
             sub_tree.parent = pivot_node
 
         else:  # other is higher
-            sub_tree = other.get_sub_tree(direction="left", sub_tree_height=self.root.height)
+            sub_tree = other.get_sub_tree_root(direction="left", sub_tree_height=self.root.height)
 
             pivot_node.left = self.root
             self.root.parent = pivot_node
