@@ -67,16 +67,19 @@ def test_join(tree_1: AVLTree, tree_2: AVLTree, tree_1_keys: list = None, tree_2
     tree_1.printt()
 
 
-def test_split(tree: AVLTree):
-    rand_small = create_rand_keys(n=50, start=0, end=500)
+def test_split(tree: AVLTree, keys = None, pivot_node_rank: int = -1):
 
-    exception_set = {131, 387, 259, 389, 265, 138, 267, 406, 407, 283, 28, 157, 159, 416, 164, 421, 423, 298, 428, 430, 303, 176, 182, 439, 56, 189, 317, 325, 455, 328, 74, 458, 204, 333, 205, 83, 473, 219, 476, 93, 479, 351, 482, 357, 235, 363, 494, 374, 247, 121}
+    rand_small = create_rand_keys(n=50, start=0, end=500) if not keys else keys
+    pivot_node_rank = create_rand_keys(n=1, start=0, end=len(rand_small)) if pivot_node_rank == -1 else pivot_node_rank
 
-    print(f"tested list (sorted): {sorted(exception_set)}")
-    test_import(t=tree, keys=exception_set)
-    rand_node = tree.select(i=23)
+    print(f"tested list: {rand_small}")
+    print(f"tested list (sorted): {sorted(rand_small)}")
 
+    test_import(t=tree, keys=rand_small)
+
+    rand_node = tree.select(i=pivot_node_rank)
     print(f"split node: {rand_node}")
+
     split_trees = tree.split(node=rand_node)
 
     print(DIVIDER)
@@ -93,5 +96,7 @@ def test_split(tree: AVLTree):
 
 
 # test_join(tree_1=t1, tree_2=t2, tree_1_keys=test_join_left, tree_2_keys=test_join_right, pivot_node_key=328)
-test_split(tree=t1)
-[28, 56, 74, 83, 93, 121, 131, 138, 157, 159, 164, 176, 182, 189, 204, 205, 219, 235, 247, 259, 265, 267]
+
+exception_list = {261, 391, 263, 141, 143, 401, 23, 408, 153, 409, 413, 158, 415, 417, 301, 430, 180, 312, 314, 187, 316, 444, 62, 320, 64, 457, 203, 78, 79, 81, 83, 85, 470, 87, 345, 220, 92, 222, 94, 482, 227, 104, 367, 124, 496, 498, 117, 374, 250, 252}
+
+test_split(tree=t1, keys=exception_list, pivot_node_rank=37)

@@ -678,6 +678,7 @@ class AVLTree(object):
 
             pivot_node.right = self.root
             pivot_node.left = other.root
+
             self.root = pivot_node
 
         elif height_difference > 0:  # self is higher
