@@ -32,7 +32,7 @@ def create_rand_keys(n: int, start: int = 0, end: int = 100):
 
 def test_import(t: AVLTree, keys = None, multiple_prints: bool = False, with_printing: bool = True):
     rand_small = create_rand_keys(n=50, start=0, end=500) if not keys else keys
-    print("done building rand_small")
+    # print("done building rand_small")
 
     for key in rand_small:
         t.insert(key=key, val="")
@@ -43,7 +43,7 @@ def test_import(t: AVLTree, keys = None, multiple_prints: bool = False, with_pri
     if with_printing and not multiple_prints:
         t.printt()
         print(DIVIDER)
-    print("done")
+    print(f"\nORIGIN\nMin: {t.min} | Max: {t.max}")
     return t
 
 
@@ -76,10 +76,10 @@ def test_split(tree: AVLTree, keys = None, pivot_node_rank: int = -1):
     pivot_node_rank = create_rand_keys(n=1, start=0, end=len(rand_small)) if pivot_node_rank == -1 else pivot_node_rank
     sorted_rand_small = sorted(rand_small)
 
+    test_import(t=tree, keys=rand_small, with_printing=False)
+
     print(f"tested list: {rand_small}")
     print(f"tested list (sorted): {sorted_rand_small}")
-
-    test_import(t=tree, keys=rand_small, with_printing=False)
 
     rand_node = tree.select(i=pivot_node_rank)
     print(f"split node: {rand_node}")
@@ -88,14 +88,21 @@ def test_split(tree: AVLTree, keys = None, pivot_node_rank: int = -1):
 
     print(DIVIDER)
 
-    print(f"expected values in tree: {sorted_rand_small[:pivot_node_rank - 1]}")
+    print("T_LEFT")
+    print(sorted_rand_small[:pivot_node_rank - 1])
+    print(f"Min: {split_trees[0].min} | Max: {split_trees[0].max}")
     # split_trees[0].printt()
 
     print(DIVIDER)
-    print(f"expected values in tree: {sorted_rand_small[pivot_node_rank:]}")
+
+    print("T_RIGHT")
+    print(sorted_rand_small[pivot_node_rank:])
+    print(f"Min: {split_trees[1].min} | Max: {split_trees[1].max}")
     # split_trees[1].printt()
 
     print(DIVIDER)
+    print(DIVIDER)
+
 
 def test_BST_delete(tree: AVLTree, pivot_node_rank: int = -1, keys = None):
     rand_small = create_rand_keys(n=50, start=0, end=500) if not keys else keys
@@ -122,6 +129,7 @@ def test_BST_delete(tree: AVLTree, pivot_node_rank: int = -1, keys = None):
     print(DIVIDER)
     print("tree after BST_delete:")
     tree.printt()
+
 
 def test_delete(tree: AVLTree, pivot_node_rank: int = -1, keys = None):
     rand_small = create_rand_keys(n=50, start=0, end=500) if not keys else keys
@@ -154,6 +162,6 @@ exception_list = {385, 130, 261, 135, 145, 146, 401, 20, 277, 273, 23, 149, 408,
 # test_import(t=t1, keys=exception_list)
 
 while True:
-    test_import(t=t1, with_printing=False)
-    print(t1.avl_to_array())
+    test_split(tree=t1)
+    # print(f"Min: {t1.min} | Max: {t1.max}")
     t1 = AVLTree()

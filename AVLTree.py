@@ -405,7 +405,7 @@ class AVLTree(object):
         node.height_manager()
         node.update_size()
 
-        return count_balance_actions_rotate  # TODO: make it more abstract
+        return count_balance_actions_rotate
 
     def right_rotation(self, node: AVLNode, relative_direction: str | None):
 
@@ -559,7 +559,7 @@ class AVLTree(object):
         # If i'm here- I'm not a root!
         else:
             curr_node = node
-            while curr_node.parent.right == curr_node:  # TODO: Make sure that curr_node != self.root is impossible
+            while curr_node.parent.right == curr_node:
                 curr_node = curr_node.parent
 
             return curr_node.parent if curr_node != self.root else curr_node
@@ -577,7 +577,7 @@ class AVLTree(object):
         # If i'm here- I'm not a root!
         else:
             curr_node = node
-            while curr_node.parent.left == curr_node:  # TODO: Make sure that curr_node != self.root is impossible
+            while curr_node.parent.left == curr_node:
                 curr_node = curr_node.parent
 
             return curr_node.parent if curr_node != self.root else curr_node
@@ -657,12 +657,7 @@ class AVLTree(object):
             temp_node = AVLNode()
             if curr_node.get_relative_direction() == "right":
 
-                # temp_node = AVLNode(key=curr_node.parent.left.key, value=curr_node.parent.left.value)
-
                 temp_node.set_as_other_node(other=curr_node.parent.left, with_parent=False)
-                # temp_node.left, temp_node.right = curr_node.parent.left.left, curr_node.parent.left.right
-                # temp_node.left.parent = temp_node if temp_node.left.is_real_node() else None
-                # temp_node.right.parent = temp_node if temp_node.right.is_real_node() else None
 
                 temp_tree.root = temp_node
                 temp_tree.init_min_max()
@@ -671,13 +666,7 @@ class AVLTree(object):
 
             else:  # curr_node.get_relative_direction() == "left":
 
-                # temp_node = AVLNode(key=curr_node.parent.right.key, value=curr_node.parent.right.value)
-
                 temp_node.set_as_other_node(other=curr_node.parent.right, with_parent=False)
-
-                # temp_node.left, temp_node.right = curr_node.parent.right.left, curr_node.parent.right.right
-                # temp_node.left.parent = temp_node if temp_node.left.is_real_node() else None
-                # temp_node.right.parent = temp_node if temp_node.right.is_real_node() else None
 
                 temp_tree.root = temp_node
                 temp_tree.init_min_max()
@@ -687,10 +676,15 @@ class AVLTree(object):
             curr_node = curr_node.parent
 
         #  maintain min and max for the new splitted trees
-        right_tree.max = self.max
-        right_tree.init_min()
-        left_tree.min = self.min
-        left_tree.init_max()
+        if not right_tree.is_empty():
+            right_tree.max = self.max
+            right_tree.min = self.successor(node=node)
+            # right_tree.init_min()
+
+        if not left_tree.is_empty():
+            left_tree.min = self.min
+            left_tree.max = self.predecessor(node=node)
+            # left_tree.init_max()
 
         return [left_tree, right_tree]
 
@@ -731,7 +725,6 @@ class AVLTree(object):
 
     def join(self, tree, key, val):
 
-        # TODO: maintain min/max when joining
         pivot_node = AVLNode(key=key, value=val)
 
         has_empty = self.is_empty() or tree.is_empty()
@@ -746,10 +739,11 @@ class AVLTree(object):
 
         if join_direction == "right":
             height_difference = self.join_right(other=tree, pivot_node=pivot_node)
+            self.max = tree.max
         else:
             height_difference = self.join_left(other=tree, pivot_node=pivot_node)
+            self.min = tree.min
 
-        # self.root = pivot_node  # TODO: Where we stopped 4/5/23 (Thursday)
         self.rebalance_up(start_node=pivot_node)  # rebalance from x(=new_node) upwards
 
         return height_difference
