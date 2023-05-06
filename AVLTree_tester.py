@@ -31,7 +31,7 @@ def create_rand_keys(n: int, start: int = 0, end: int = 100):
 
 
 def test_import(t: AVLTree, keys = None, multiple_prints: bool = False, with_printing: bool = True):
-    rand_small = create_rand_keys(n=1500000, start=0, end=5000000) if not keys else keys
+    rand_small = create_rand_keys(n=50, start=0, end=500) if not keys else keys
     print("done building rand_small")
 
     for key in rand_small:
@@ -155,4 +155,5 @@ exception_list = {385, 130, 261, 135, 145, 146, 401, 20, 277, 273, 23, 149, 408,
 
 while True:
     test_import(t=t1, with_printing=False)
+    print(t1.avl_to_array())
     t1 = AVLTree()

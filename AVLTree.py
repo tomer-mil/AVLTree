@@ -259,7 +259,7 @@ class AVLTree(object):
     """
 
     def __init__(self, root: AVLNode = AVLNode()):
-        self.root = root  # initializes with dummy node
+        self.root = root
         self.min = None
         self.max = None
 
@@ -508,8 +508,7 @@ class AVLTree(object):
 
                 # node is the only node on tree
                 if node_relative_direction == 'root':
-                    self.root.set_as_other_node(other=new_node, with_parent=False)  # tree size is updated in "set_as_other_root"
-                    # TODO: Think about what is an empty tree (root = None or root = AVLNode())
+                    self.root = new_node
                     return
 
                 else:
@@ -613,17 +612,17 @@ class AVLTree(object):
     def avl_to_array(self):
         arr = []
 
-        if not self.min:
+        if self.is_empty():
             return arr
 
         curr_node = self.min
+        arr.append((curr_node.key, curr_node.value))
 
-        while curr_node:  # TODO: Set stop
+        while curr_node.key != self.max.key:
+            curr_node = self.successor(node=curr_node)
+            arr.append((curr_node.key, curr_node.value))
 
-            arr.append(curr_node)
-
-
-        return None
+        return arr
 
     """returns the number of items in dictionary 
     @rtype: int
