@@ -30,8 +30,11 @@ def create_rand_keys(n: int, start: int = 0, end: int = 100):
     return rand_test
 
 
-def test_import(t: AVLTree, keys, multiple_prints: bool = False, with_printing: bool = True):
-    for key in keys:
+def test_import(t: AVLTree, keys = None, multiple_prints: bool = False, with_printing: bool = True):
+    rand_small = create_rand_keys(n=1500000, start=0, end=5000000) if not keys else keys
+    print("done building rand_small")
+
+    for key in rand_small:
         t.insert(key=key, val="")
         if multiple_prints and with_printing:
             t.printt()
@@ -40,7 +43,7 @@ def test_import(t: AVLTree, keys, multiple_prints: bool = False, with_printing: 
     if with_printing and not multiple_prints:
         t.printt()
         print(DIVIDER)
-
+    print("done")
     return t
 
 
@@ -94,13 +97,62 @@ def test_split(tree: AVLTree, keys = None, pivot_node_rank: int = -1):
 
     print(DIVIDER)
 
-# test_split(tree=t1)
+def test_BST_delete(tree: AVLTree, pivot_node_rank: int = -1, keys = None):
+    rand_small = create_rand_keys(n=50, start=0, end=500) if not keys else keys
+    test_import(t=tree, keys=rand_small, with_printing=False)
+    print(f"tested list: {rand_small}")
+
+    if pivot_node_rank == -1:
+        pivot_node_rank = create_rand_keys(n=1, start=0, end=len(rand_small))
+        pivot_node_delete =  tree.select(i=pivot_node_rank)
+    else:
+        pivot_node_delete = tree.select(i=pivot_node_rank)
+
+    print(f"node to delete: {pivot_node_delete}")
+    print(DIVIDER)
+    print(f"tree before BST_delete:")
+
+    tree.printt()
+
+    print(DIVIDER)
 
 
-# test_join(tree_1=t1, tree_2=t2, tree_1_keys=test_join_left, tree_2_keys=test_join_right, pivot_node_key=328)
+    need_rebalance_from = tree.BST_delete(pivot_node_delete)
 
-exception_list = {384, 385, 387, 390, 141, 143, 145, 401, 273, 277, 278, 407, 152, 411, 412, 158, 287, 40, 169, 170, 296, 168, 429, 56, 61, 62, 192, 328, 460, 206, 207, 466, 339, 254, 247, 476, 484, 357, 232, 489, 236, 110, 369, 242, 243, 371, 375, 250, 125, 382}
+    print(DIVIDER)
+    print("tree after BST_delete:")
+    tree.printt()
+
+def test_delete(tree: AVLTree, pivot_node_rank: int = -1, keys = None):
+    rand_small = create_rand_keys(n=50, start=0, end=500) if not keys else keys
+    test_import(t=tree, keys=rand_small, with_printing=False)
+    print(f"tested list: {rand_small}")
+
+    if pivot_node_rank == -1:
+        pivot_node_rank = create_rand_keys(n=1, start=0, end=len(rand_small))
+        pivot_node_delete =  tree.select(i=pivot_node_rank)
+    else:
+        pivot_node_delete = tree.select(i=pivot_node_rank)
+
+    print(f"node to delete: {pivot_node_delete}")
+
+    print(DIVIDER)
+
+    print(f"tree BEFORE delete:")
+    # tree.printt()
+
+    print(DIVIDER)
+
+    tree.delete(node=pivot_node_delete)
+
+    print(f"tree AFTER delete:")
+    # tree.printt()
+
+
+exception_list = {385, 130, 261, 135, 145, 146, 401, 20, 277, 273, 23, 149, 408, 155, 412, 158, 160, 288, 291, 168, 297, 437, 441, 317, 319, 63, 196, 454, 71, 199, 455, 326, 337, 82, 339, 212, 468, 86, 216, 348, 223, 97, 104, 107, 108, 110, 367, 241, 379, 380}
+
+# test_import(t=t1, keys=exception_list)
+
 while True:
-    test_split(tree=t1)
+    test_import(t=t1, with_printing=False)
     t1 = AVLTree()
-

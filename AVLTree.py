@@ -116,7 +116,7 @@ class AVLNode(object):
         return self.size
 
     def get_bf(self):
-        return self.left.height - self.right.height if (self.left and self.height) else -99
+        return self.left.height - self.right.height if (self.left and self.right) else -99
 
     """sets key
     @type key: int or None
@@ -193,6 +193,12 @@ class AVLNode(object):
     def is_real_node(self):
         return self.key is not None
 
+    def has_dummy_child(self):
+        return (not self.left.is_real_node()) or (not self.right.is_real_node())
+
+    def is_leaf(self):
+        return (not self.left.is_real_node()) and (not self.right.is_real_node())
+
     def add_dummy_nodes(self):
         self.add_left_dummy()
         self.add_right_dummy()
@@ -206,7 +212,6 @@ class AVLNode(object):
     def add_right_dummy(self):
         dummy = AVLNode(height=-1)
         dummy.set_size(s=0)
-
         self.right = dummy
 
     def set_as_other_node(self, other, with_parent: bool = True):
@@ -381,17 +386,17 @@ class AVLTree(object):
         child_bf = node.left.get_bf() if node_bf == 2 else node.right.get_bf()
 
         if node_bf == 2:
-            if child_bf == 1:
+            if child_bf == 1 or child_bf == 0:
                 self.right_rotation(node=node, relative_direction=relative_direction)
                 count_balance_actions_rotate = 1
-            else:
+            else:  # child_bf == -1
                 self.left_then_right_rotation(node=node, relative_direction=relative_direction)
                 count_balance_actions_rotate = 2
-        else:
-            if child_bf == -1:
+        else:  # node_bf == -2
+            if child_bf == -1 or child_bf == 0:
                 self.left_rotation(node=node, relative_direction=relative_direction)
                 count_balance_actions_rotate = 1
-            else:
+            else:  # child_bf == 1
                 self.right_then_left_rotation(node=node, relative_direction=relative_direction)
                 count_balance_actions_rotate = 2
 
@@ -412,14 +417,13 @@ class AVLTree(object):
         A.right = B
         A.parent = B.parent
 
-        # Partial rotation (RL)
-        if not relative_direction:
+        if not relative_direction:  # Partial rotation (RL)
             A.parent.right = A
             B.height_manager()  # "6" is a leaf after partial-right rotation
             A.height_manager()  # "8" is a "6"'s parent after partial-right rotation
 
         else:
-            self.set_as_child_after_rotation(A, relative_direction=relative_direction)
+            self.set_as_child_after_rotation(node=A, relative_direction=relative_direction)
 
         B.parent = A
 
@@ -436,14 +440,13 @@ class AVLTree(object):
         A.left = B
         A.parent = B.parent
 
-        # Partial rotation (LR)
-        if not relative_direction:
+        if not relative_direction:  # Partial rotation (LR)
             A.parent.left = A
             B.height_manager()
             A.height_manager()
 
         else:
-            self.set_as_child_after_rotation(A, relative_direction=relative_direction)
+            self.set_as_child_after_rotation(node=A, relative_direction=relative_direction)
 
         B.parent = A
 
@@ -488,6 +491,55 @@ class AVLTree(object):
                 higher_node.left = node
             else:
                 higher_node.right = node
+
+    """
+    @pre: node is a real pointer to a node in self
+    """
+    def BST_delete(self, node: AVLNode):
+
+        has_dummy_child = node.has_dummy_child()
+        node_relative_direction = node.get_relative_direction()
+
+        if has_dummy_child:
+            new_node = AVLNode()
+
+            # Case 1: x is leaf
+            if node.is_leaf():
+
+                # node is the only node on tree
+                if node_relative_direction == 'root':
+                    self.root.set_as_other_node(other=new_node, with_parent=False)  # tree size is updated in "set_as_other_root"
+                    # TODO: Think about what is an empty tree (root = None or root = AVLNode())
+                    return
+
+                else:
+                    need_rebalance_from = node.parent
+
+                    new_node.set_as_dummy()
+                    new_node.parent = node.parent
+                    setattr(node.parent, node_relative_direction, new_node)
+
+                    return need_rebalance_from
+
+            # Case 2: node has one child
+            child_relative_direction = 'left' if node.left.is_real_node() else 'right'
+            relevant_child = getattr(node, child_relative_direction)
+
+            setattr(node, child_relative_direction + ".parent", node.parent)  # example : node.left.parent = node.parent
+            setattr(node.parent, node_relative_direction, relevant_child)
+
+            return relevant_child
+
+        # Case 3: node has two children
+        else:
+            new_node = self.successor(node=node)  # y
+            self.BST_delete(node=new_node)
+            # node.set_as_other_node(other=new_node, with_parent=True)
+
+            # new_node.set_as_other_node(other=node, with_parent=True)
+            self.replace_nodes(original=node, new=new_node)
+
+            return new_node
 
     ####################
 
@@ -539,7 +591,19 @@ class AVLTree(object):
     """
 
     def delete(self, node):
-        return -1
+
+        if node.key == self.min.key:
+            self.min = self.successor(node=self.min)
+
+        if node.key == self.max.key:
+            self.max = self.predecessor(node=self.max)
+
+        rebalance_start_node = self.BST_delete(node=node)
+        if rebalance_start_node:  # The tree is empty after deletion -> No need for rebalancing
+            balance_actions = self.rebalance_up(start_node=rebalance_start_node)
+            return balance_actions
+        return 0
+
 
     """returns an array representing dictionary 
     @rtype: list
@@ -547,6 +611,18 @@ class AVLTree(object):
     """
 
     def avl_to_array(self):
+        arr = []
+
+        if not self.min:
+            return arr
+
+        curr_node = self.min
+
+        while curr_node:  # TODO: Set stop
+
+            arr.append(curr_node)
+
+
         return None
 
     """returns the number of items in dictionary 
@@ -789,6 +865,23 @@ class AVLTree(object):
             else:  # then: node_abs_bf == 2:
                 count_balance_actions += self.rotate(node=start_node)
                 return count_balance_actions
+
+    def replace_nodes(self, original: AVLNode, new: AVLNode):
+
+        original_relative_direction = original.get_relative_direction()
+
+        new.left = original.left
+        original.left.parent = new
+
+        new.right = original.right
+        original.right.parent = new
+
+        if original.parent:  # If original is the root
+            new.parent = original.parent
+            setattr(original.parent, original_relative_direction, new)
+        else:
+            self.root = new
+            new.parent = None
 
     def set_as_other_tree(self, other):
         self.root = other.root
