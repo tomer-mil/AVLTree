@@ -1,10 +1,8 @@
-import random
-
-# username - complete info
-# id1      - complete info
-# name1    - complete info
-# id2      - complete info
-# name2    - complete info
+# username - mildworth
+# id1      - 316081355
+# name1    - Tomer Mildworth
+# id2      - 207702861
+# name2    - Lior Bodner
 
 
 """A class representing a node in an AVL tree"""
