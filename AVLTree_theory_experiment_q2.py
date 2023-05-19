@@ -1,11 +1,8 @@
-from importlib.metadata import SelectableGroups
-import random
-
-# username - complete info
-# id1      - complete info
-# name1    - complete info
-# id2      - complete info
-# name2    - complete info
+# username - mildworth
+# id1      - 316081355
+# name1    - Tomer Mildworth
+# id2      - 207702861
+# name2    - Lior Bodner
 
 
 """A class representing a node in an AVL tree"""
@@ -342,9 +339,8 @@ class AVLTree(object):
     def insert(self, key, val):
 
         new_node = AVLNode(key=key, value=val)
-        search_operations_counter, swap_operations_counter, balance_actions = 0, 0, 0
 
-        search_operations_counter, swap_operations_counter = self.BST_insert(node=new_node)
+        self.BST_insert(node=new_node)
 
         # update tree attributes if needed
         if self.should_update_min(node=new_node):
@@ -376,11 +372,10 @@ class AVLTree(object):
         # 	else:  # then: curr_node_abs_bf == 2:
         # 		count_balance_actions += self.rotate(node=curr_node)
         # 		return count_balance_actions
-        return balance_actions, swap_operations_counter, search_operations_counter
+
+        return balance_actions
 
     def rotate(self, node: AVLNode):
-
-        count_balance_actions_rotate = 0
 
         # Check the relative direction of the node to its parent in order to connect the new node in the same location
         relative_direction = node.get_relative_direction()
@@ -465,68 +460,35 @@ class AVLTree(object):
         self.right_rotation(node=node, relative_direction=relative_direction)
 
     def BST_insert(self, node: AVLNode):
-        search_operations_counter = 0
-        swap_operations_counter = 0
+
         node.add_dummy_nodes()
 
-        if self.is_empty():  # tree is empty
+        if self.is_empty():
             self.root = node
-            return 0, 0
+            self.root.size = 1 # TODO: delete this row. we insert first node to tree but size is initialized as 1
 
         else:
-            curr_node = self.max  
-            if node.key > self.max.key:  # maximum has no right son. new key is the new max
-                node.parent = self.max
-                self.max.right = node
-                self.max = node
-                return 1, 0
+            higher_node = AVLNode()
+            lower_node = self.root
+
+            # walking down the tree
+            while lower_node.is_real_node():
+                higher_node = lower_node
+
+                higher_node.size += 1
+
+                if node.key < lower_node.key:
+                    lower_node = lower_node.left
+                else:
+                    lower_node = lower_node.right
+
+            node.parent = higher_node
+
+            # inserting at the right place
+            if node.key < higher_node.key:
+                higher_node.left = node
             else:
-                if self.root.size == 1:  # max is the only node in tree
-                    node.parent = self.max
-                    self.max.left = node
-                    return 1, 1
-                else:  # self.max.parent.key < node.key:
-                    while curr_node.key > node.key and curr_node.parent:
-                        if curr_node.parent.key > node.key:
-                            curr_node = curr_node.parent
-                            search_operations_counter += 1
-                        else:
-                            break
-                    counters = self.walk_down_the_tree(start_node=curr_node, new_node=node)
-                    search_operations_counter += counters[0] # + 1
-                    swap_operations_counter += counters[1]
-
-            return search_operations_counter, swap_operations_counter
-
-    def walk_down_the_tree(self, start_node: AVLNode, new_node: AVLNode):
-        search_operations_counter = 0
-        swap_operations_counter = 0
-
-        higher_node = AVLNode()
-        lower_node = start_node
-
-        # walking down the tree
-        while lower_node.is_real_node():
-            higher_node = lower_node
-
-            if new_node.key < lower_node.key:
-                swap_operations_counter += (higher_node.right.size + 1)
-                lower_node = lower_node.left
-            else:
-                lower_node = lower_node.right
-            search_operations_counter += 1
-            higher_node.size += 1
-
-        new_node.parent = higher_node
-
-        # inserting at the right place
-        if new_node.key < higher_node.key:
-            higher_node.left = new_node
-            # swap_operations_counter += 1
-        else:
-            higher_node.right = new_node
-
-        return search_operations_counter, swap_operations_counter
+                higher_node.right = node
 
     """
     @pre: node is a real pointer to a node in self
@@ -679,6 +641,8 @@ class AVLTree(object):
     """
 
     def split(self, node):
+        join_costs = []
+        join_run_count =0
 
         left_tree = AVLTree()
         right_tree = AVLTree()
@@ -698,7 +662,9 @@ class AVLTree(object):
                 temp_tree.root = temp_node
                 temp_tree.init_min_max()
 
-                left_tree.join(tree=temp_tree, key=curr_node.parent.key, val=curr_node.parent.value)
+                cost = left_tree.join(tree=temp_tree, key=curr_node.parent.key, val=curr_node.parent.value)
+                join_costs.append(cost)
+                join_run_count += 1
 
             else:  # curr_node.get_relative_direction() == "left":
 
@@ -707,7 +673,9 @@ class AVLTree(object):
                 temp_tree.root = temp_node
                 temp_tree.init_min_max()
 
-                right_tree.join(tree=temp_tree, key=curr_node.parent.key, val=curr_node.parent.value)
+                cost = right_tree.join(tree=temp_tree, key=curr_node.parent.key, val=curr_node.parent.value)
+                join_costs.append(cost)
+                join_run_count += 1
 
             curr_node = curr_node.parent
 
@@ -722,7 +690,7 @@ class AVLTree(object):
             left_tree.max = self.predecessor(node=node)
             # left_tree.init_max()
 
-        return [left_tree, right_tree]
+        return join_costs, join_run_count
 
     def get_sub_tree_root(self, direction: str, sub_tree_height: int):
 
@@ -894,7 +862,6 @@ class AVLTree(object):
             else:  # then: node_abs_bf == 2:
                 count_balance_actions += self.rotate(node=start_node)
                 return count_balance_actions
-        return count_balance_actions
 
     def replace_nodes(self, original: AVLNode, new: AVLNode):
 
