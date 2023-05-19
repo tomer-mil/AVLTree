@@ -465,7 +465,7 @@ class AVLTree(object):
 
         if self.is_empty():
             self.root = node
-            self.root.size += 1
+            self.root.size = 1
 
         else:
             higher_node = AVLNode()
