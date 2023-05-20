@@ -8,6 +8,7 @@
 """A class representing a node in an AVL tree"""
 
 class AVLNode(object):
+
     """Constructor, you are allowed to add more fields.
     @type key: int or None
     @param key: key of your node
@@ -28,6 +29,15 @@ class AVLNode(object):
         return f"key: {self.key} | h: {self.height} | BF: {self.get_bf()} | size: {self.get_size()}" if self.is_real_node() else "Dummy Node"
 
     def __eq__(self, other):
+        """
+        Checks whether two nodes are equal, based on their key's value.
+
+        Complexity: O(1)
+
+        :param other: AVLNode
+        :return: True if self.key == other.key or when nodes are None. Else False
+        """
+
         if not other:
             if not self:
                 return True
@@ -36,15 +46,47 @@ class AVLNode(object):
         return self.key == other.key
 
     def __lt__(self, other):
+        """
+        Less-than for nodes by comparing keys.
+
+        Complexity: O(1)
+
+        :param other: AVLNode
+        :return: True if self.key < other.key
+        """
         return self.key < other.key
 
     def __le__(self, other):
+        """
+        Less-than or equals for nodes by comparing keys.
+
+        Complexity: O(1)
+
+        :param other: AVLNode
+        :return: True if self.key <= other.key
+        """
         return self.key <= other.key
 
     def __gt__(self, other):
+        """
+        Greater-than for nodes by comparing keys.
+
+        Complexity: O(1)
+
+        :param other: AVLNode
+        :return: True if self.key > other.key
+        """
         return self.key > other.key
 
     def __ge__(self, other):
+        """
+        Greater-than or equals for nodes by comparing keys.
+
+        Complexity: O(1)
+
+        :param other: AVLNode
+        :return: True id self.key >= other key
+        """
         return self.key >= other.key
 
     """returns the key
@@ -55,13 +97,19 @@ class AVLNode(object):
     def get_key(self):
         return self.key
 
-    def get_relative_direction(self):
+    def get_relative_direction(self) -> str:
+        """
+        Determines the direction of the node in relation to his parent, i.e. whether the node is a left or right child.
+
+        Complexity: O(1)
+
+        :return: "left", "right" or "root"
+        """
         if not self.parent:
             return "root"
         return "left" if self == self.parent.left else "right"
 
     """returns the value
-
     @rtype: any
     @returns: the value of self, None if the node is virtual
     """
@@ -113,7 +161,15 @@ class AVLNode(object):
     def get_size(self):
         return self.size
 
-    def get_bf(self):
+    def get_bf(self) -> int:
+        """
+        Returns the Balance-Factor of the node, or -99 if no node (real or dummy) on both sides.
+
+        Complexity: O(1)
+
+        :return: left.height - right.height
+        """
+
         return self.left.height - self.right.height if (self.left and self.right) else -99
 
     """sets key
@@ -164,13 +220,21 @@ class AVLNode(object):
     def set_height(self, h):
         self.height = h
 
-    def height_manager(self):
+    def height_manager(self) -> bool:
+        """
+        Updates the nodes current height and returns a boolean indicating whether a height change occurred.
+
+        Complexity: O(1)
+
+        :return: True if height has changed
+        """
+
         new_height = 1 + max(self.left.height, self.right.height)
 
         if self.height != new_height:
             self.height = new_height
             return True  # height changed
-        return False  # height stays the same
+        return False  # height stayed the same
 
     """sets the size of node
     @type s: int
@@ -180,7 +244,14 @@ class AVLNode(object):
     def set_size(self, s):
         self.size = s
 
-    def update_size(self):
+    def update_size(self) -> None:
+        """
+        Updates the node's current size.
+
+        Complexity: O(1)
+
+        :return: None
+        """
         self.set_size(s=(self.right.size + self.left.size + 1))
 
     """returns whether self is not a virtual node 
@@ -188,33 +259,80 @@ class AVLNode(object):
     @returns: False if self is a virtual node, True otherwise.
     """
 
-    def is_real_node(self):
+    def is_real_node(self) -> bool:
         return self.key is not None
 
-    def has_dummy_child(self):
+    def has_dummy_child(self) -> bool:
+        """
+        Checks whether one of the node's children is a dummy node.
+
+        Complexity: O(1)
+
+        :return: True if has dummy node as child
+        """
+
         return (not self.left.is_real_node()) or (not self.right.is_real_node())
 
-    def is_leaf(self):
+    def is_leaf(self) -> bool:
+        """
+        Checks whether the node is a leaf (i.e. both children are dummies).
+
+        Complexity: O(1)
+
+        :return:
+        """
         return (not self.left.is_real_node()) and (not self.right.is_real_node())
 
-    def add_dummy_nodes(self):
+    def add_dummy_nodes(self) -> None:
+        """
+        Adds the node dummy nodes as children on both sides.
+
+        Complexity: O(1)
+
+        :return: None
+        """
         self.add_left_dummy()
         self.add_right_dummy()
 
-    def add_left_dummy(self):
+    def add_left_dummy(self) -> None:
+        """
+        Adds the node a dummy child node on the left side.
+
+        Complexity: O(1)
+
+        :return: None
+        """
+
         dummy = AVLNode(height=-1)
         dummy.set_size(s=0)
 
         self.left = dummy
 
     def add_right_dummy(self):
+        """
+        Adds the node a dummy child node on the right side.
+
+        Complexity: O(1)
+
+        :return: None
+        """
+
         dummy = AVLNode(height=-1)
         dummy.set_size(s=0)
         self.right = dummy
 
-    def set_as_other_node(self, other, with_parent: bool = True):
+    def set_as_other_node(self, other, with_parent: bool = True) -> None:
+        """
+        Copies another node's parameters' values to the current node.
 
-        if not other.is_real_node():
+        Complexity: O(1)
+
+        :param other: AVLNode - node to copy values from
+        :param with_parent: bool (default True) - Whether to link this node to other's parent
+        :return: None
+        """
+
+        if not other.is_real_node():  # Other node is dummy
             self.set_as_dummy()
             return
 
@@ -226,18 +344,25 @@ class AVLNode(object):
         if other.left.is_real_node():
             self.left = other.left
             self.left.parent = self
-        else:
+        else:  # Other's left child is dummy
             self.add_left_dummy()
 
         if other.right.is_real_node():
             self.right = other.right
             self.right.parent = self
-        else:
+        else:  # Other's right child is dummy
             self.add_right_dummy()
 
         self.parent = other.parent if with_parent else None
 
-    def set_as_dummy(self):
+    def set_as_dummy(self) -> None:
+        """
+        Sets a node's parameters to a dummy node's parameters.
+
+        Complexity: O(1)
+
+        :return:
+        """
         self.key = None
         self.value = None
         self.height = -1
