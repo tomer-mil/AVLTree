@@ -389,60 +389,115 @@ class AVLTree(object):
     def __repr__(self):
         return f"root: {self.root.key} | s: {self.size()} | h: {self.root.height}"
 
-    # add your fields here
+    def is_empty(self) -> bool:
+        """
+        Checks if the current tree is an empty tree (i.e. has a non-dummy [real or not None] AVLNode as root)
 
-    def is_empty(self):
+        Complexity: O(1)
+
+        :return: True if root is None or dummy node.
+        """
         return not self.root.is_real_node()
 
-    def should_update_min(self, node: AVLNode):
+    def should_update_min(self, node: AVLNode) -> bool:
+        """
+        Checks if the current inserted node's key is smaller than the current tree's saved minimum node.
+
+        If no minimum node is saved, returns False.
+
+        Complexity: O(1)
+
+        :param node: AVLNode
+        :return: True if node's key is smaller than tree's minimum
+        """
         return node.key < self.min.key if self.min else True
 
-    def init_min(self):
-        self.min = self.get_sub_tree_root(direction="left", sub_tree_height=0)
+    def should_update_max(self, node: AVLNode) -> bool:
+        """
+        Checks if the current inserted node's key is bigger than the current tree's saved maximum node.
 
-    def should_update_max(self, node: AVLNode):
+        If no maximum node is saved, returns False.
+
+        Complexity: O(1)
+
+        :param node: AVLNode
+        :return: True if node's key is bigger than tree's maximum
+        """
         return node.key > self.max.key if self.max else True
 
-    def init_max(self):
-        self.max = self.get_sub_tree_root(direction="right", sub_tree_height=0)
+    def get_subtree_min(self) -> AVLNode:
+        """
+        Returns the the current tree minimum node by going down the tree, starting from the root.
 
-    def get_subtree_min(self):
+        Complexity: O(log(n))
+
+        :return: AVLNode with minimal key
+        """
         curr_node = self.root
         while curr_node.left.is_real_node():
             curr_node = curr_node.left
         return curr_node
 
     def get_subtree_max(self):
+        """
+        Returns the the current tree maximum node by going down the tree, starting from the root.
+
+        Complexity: O(log(n))
+
+        :return: AVLNode with maximal key
+        """
         curr_node = self.root
         while curr_node.right.is_real_node():
             curr_node = curr_node.right
         return curr_node
 
-    def init_min_max(self):
+    def init_min_max(self) -> None:
+        """
+        Initializes the tree's min and max attributes.
+
+        Complexity: O(log(n))
+
+        :return: None
+        """
         if self.is_empty():
             return
         self.min = self.get_subtree_min()
         self.max = self.get_subtree_max()
 
     """searches for a value in the dictionary corresponding to the key
+    
+    Complexity: O(log(n))
+    
     @type key: int
     @param key: a key to be searched
-    @rtype: any
-    @returns: the value corresponding to key.
+    @rtype: AVLNode if found, else None
+    @returns: the node corresponding to key.
     """
 
-    def search(self, key):
+    def search(self, key) -> AVLNode | None:
         curr_node = self.root
         while curr_node.is_real_node():
-            if curr_node.key == key:
+            if curr_node.key == key:  # key found
                 return curr_node
             if curr_node.key > key:
                 curr_node = curr_node.left
             else:
                 curr_node = curr_node.right
-        return None
 
-    def set_as_child_after_rotation(self, node: AVLNode, relative_direction: str):
+        return None  # no such key was found
+
+    def set_as_child_after_rotation(self, node: AVLNode, relative_direction: str) -> None:
+        """
+        Sets a given node as a child of his parent in a given direction by 'relative_direction'.
+
+        The function is being called specifically while preforming a rotation.
+
+        Complexity: O(1)
+
+        :param node: AVLNode - the node that changes places
+        :param relative_direction: str - the direction in which 'node' should be placed
+        :return: None
+        """
         if relative_direction == "root":
             setattr(self, relative_direction, node)
         else:
@@ -451,7 +506,7 @@ class AVLTree(object):
     ####################
     ###### Insert ######
     ####################
-    """inserts val at position i in the dictionary
+    """Inserts val at position i in the dictionary
     @type key: int
     @pre: key currently does not appear in the dictionary
     @param key: key of item that is to be inserted to self
@@ -461,46 +516,50 @@ class AVLTree(object):
     @returns: the number of rebalancing operation due to AVL rebalancing
     """
 
-    def insert(self, key, val):
+    def insert(self, key, val) -> int:
+        """
+        Inserts a new node to the tree with given key and value.
 
+        Insertion starts with a basic Binary Search Tree (BST) insertion,
+        then checks whether or not to update minimum and maximum attributes,
+        and finally rebalances the tree going upwards from the inserted node using rotations.
+
+        While rebalancing, the method counts the balance actions taken (as defined in the assignment) in order
+        to make the tree a valid AVL tree.
+
+        Complexity: O(log(n))
+
+        :param key: int - The key of the inserted data
+        :param val: Any - The value of the inserted data
+        :return: int - Number of balance actions required for insertion
+        """
+
+        # Generates a new node with given params
         new_node = AVLNode(key=key, value=val)
 
+        # Inserts the node with a classic BST algorithm
         self.BST_insert(node=new_node)
 
-        # update tree attributes if needed
+        # Update tree attributes if needed
         if self.should_update_min(node=new_node):
             self.min = new_node
         if self.should_update_max(node=new_node):
             self.max = new_node
 
-        # Walking up the tree
+        # Preforming balancing actions (rotations and attributes maintaining) while walking up the tree
         balance_actions = self.rebalance_up(start_node=new_node.get_parent())
-
-        #
-        # while curr_node:  # while curr_node's child (left or right) is not the root
-        #
-        # 	# update node attributes after BST insertion
-        # 	did_height_change = curr_node.height_manager()
-        # 	# curr_node.update_size()
-        #
-        # 	curr_node_abs_bf = abs(curr_node.get_bf())
-        #
-        # 	if not did_height_change and curr_node_abs_bf < 2:
-        # 		curr_node.update_size()
-        # 		return count_balance_actions
-        #
-        # 	elif did_height_change and curr_node_abs_bf < 2:
-        # 		curr_node.update_size()
-        # 		curr_node = curr_node.get_parent()
-        # 		count_balance_actions += 1
-        #
-        # 	else:  # then: curr_node_abs_bf == 2:
-        # 		count_balance_actions += self.rotate(node=curr_node)
-        # 		return count_balance_actions
 
         return balance_actions
 
-    def rotate(self, node: AVLNode):
+    def rotate(self, node: AVLNode) -> int:
+        """
+        Preforms the rotation mechanism of AVL trees as learnt in class.
+
+        The methods calls the correct rotation method (L, R, R then L or L then R) based on the balance factor
+        and relative direction of the input node.
+        :param node:
+        :return:
+        """
 
         # Check the relative direction of the node to its parent in order to connect the new node in the same location
         relative_direction = node.get_relative_direction()
@@ -512,9 +571,11 @@ class AVLTree(object):
             if child_bf == 1 or child_bf == 0:
                 self.right_rotation(node=node, relative_direction=relative_direction)
                 count_balance_actions_rotate = 1
+
             else:  # child_bf == -1
                 self.left_then_right_rotation(node=node, relative_direction=relative_direction)
                 count_balance_actions_rotate = 2
+
         else:  # node_bf == -2
             if child_bf == -1 or child_bf == 0:
                 self.left_rotation(node=node, relative_direction=relative_direction)
