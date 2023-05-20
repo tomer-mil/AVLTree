@@ -429,7 +429,7 @@ class AVLTree(object):
         """
         Returns the the current tree minimum node by going down the tree, starting from the root.
 
-        Complexity: O(log(n))
+        Complexity: O(log(n)) - Going down an entire AVL tree is as its height, which is log(n).
 
         :return: AVLNode with minimal key
         """
@@ -442,7 +442,7 @@ class AVLTree(object):
         """
         Returns the the current tree maximum node by going down the tree, starting from the root.
 
-        Complexity: O(log(n))
+        Complexity: O(log(n)) - Going down an entire AVL tree is as its height, which is log(n).
 
         :return: AVLNode with maximal key
         """
@@ -455,7 +455,7 @@ class AVLTree(object):
         """
         Initializes the tree's min and max attributes.
 
-        Complexity: O(log(n))
+        Complexity: O(log(n)) - Going down an entire AVL tree is as its height, which is log(n), one time after the other.
 
         :return: None
         """
@@ -466,7 +466,7 @@ class AVLTree(object):
 
     """searches for a value in the dictionary corresponding to the key
     
-    Complexity: O(log(n))
+    Complexity: O(log(n)) - Going down an entire AVL tree is as its height, which is log(n)
     
     @type key: int
     @param key: a key to be searched
@@ -488,14 +488,14 @@ class AVLTree(object):
 
     def set_as_child_after_rotation(self, node: AVLNode, relative_direction: str) -> None:
         """
-        Sets a given node as a child of his parent in a given direction by 'relative_direction'.
+        Sets a given node as a child of his parent in a given direction by `relative_direction`.
 
         The function is being called specifically while preforming a rotation.
 
         Complexity: O(1)
 
         :param node: AVLNode - the node that changes places
-        :param relative_direction: str - the direction in which 'node' should be placed
+        :param relative_direction: str - the direction in which `node` should be placed
         :return: None
         """
         if relative_direction == "root":
@@ -503,9 +503,6 @@ class AVLTree(object):
         else:
             setattr(node.parent, relative_direction, node)
 
-    ####################
-    ###### Insert ######
-    ####################
     """Inserts val at position i in the dictionary
     @type key: int
     @pre: key currently does not appear in the dictionary
@@ -516,7 +513,7 @@ class AVLTree(object):
     @returns: the number of rebalancing operation due to AVL rebalancing
     """
 
-    def insert(self, key, val) -> int:
+    def insert(self, key: int, val) -> int:
         """
         Inserts a new node to the tree with given key and value.
 
@@ -553,17 +550,23 @@ class AVLTree(object):
 
     def rotate(self, node: AVLNode) -> int:
         """
-        Preforms the rotation mechanism of AVL trees as learnt in class.
+        Preforms the rotation mechanism of AVL trees as learned in class.
 
         The methods calls the correct rotation method (L, R, R then L or L then R) based on the balance factor
         and relative direction of the input node.
-        :param node:
-        :return:
+
+        The method returns the number of balance actions taken in the rotation as defined in the assignment.
+
+        Complexity: O(1)
+
+        :param node: AVLNode - The node to rotate
+        :return: int - The number of balance actions taken in the rotation
         """
 
         # Check the relative direction of the node to its parent in order to connect the new node in the same location
         relative_direction = node.get_relative_direction()
 
+        # Get the node's and relevant child's balance factors
         node_bf = node.get_bf()
         child_bf = node.left.get_bf() if node_bf == 2 else node.right.get_bf()
 
@@ -584,15 +587,26 @@ class AVLTree(object):
                 self.right_then_left_rotation(node=node, relative_direction=relative_direction)
                 count_balance_actions_rotate = 2
 
-        # Attribute update #
-
+        # Attribute update
         node.height_manager()
         node.update_size()
 
         return count_balance_actions_rotate
 
-    def right_rotation(self, node: AVLNode, relative_direction: str | None):
+    def right_rotation(self, node: AVLNode, relative_direction: str | None) -> None:
+        """
+        Preforms an AVL right rotation.
 
+        The method rotates the nodes and updates the relevant attributes accordingly
+
+        Complexity: O(1)
+
+        :param node: AVLNode - The node that rotates
+        :param relative_direction: str - In case of a partial rotation, sets the node's correct final direction
+        :return: None
+        """
+
+        # Naming nodes like the class presentation to maintain readability and consistency with pseudocode
         B = node
         A = node.left
 
@@ -601,10 +615,10 @@ class AVLTree(object):
         A.right = B
         A.parent = B.parent
 
-        if not relative_direction:  # Partial rotation (RL)
+        if not relative_direction:  # Partial rotation (R then L)
             A.parent.right = A
-            B.height_manager()  # "6" is a leaf after partial-right rotation
-            A.height_manager()  # "8" is a "6"'s parent after partial-right rotation
+            B.height_manager()
+            A.height_manager()
 
         else:
             self.set_as_child_after_rotation(node=A, relative_direction=relative_direction)
@@ -615,7 +629,19 @@ class AVLTree(object):
         A.update_size()
 
     def left_rotation(self, node: AVLNode, relative_direction: str | None):
+        """
+        Preforms an AVL left rotation.
 
+        The method rotates the nodes and updates the relevant attributes accordingly
+
+        Complexity: O(1)
+
+        :param node: AVLNode - The node that rotates
+        :param relative_direction: str - In case of a partial rotation, sets the node's correct final direction
+        :return: None
+        """
+
+        # Naming nodes like the class presentation to maintain readability and consistency with pseudocode
         B = node
         A = node.right
 
@@ -624,7 +650,7 @@ class AVLTree(object):
         A.left = B
         A.parent = B.parent
 
-        if not relative_direction:  # Partial rotation (LR)
+        if not relative_direction:  # Partial rotation (L then R)
             A.parent.left = A
             B.height_manager()
             A.height_manager()
@@ -637,18 +663,53 @@ class AVLTree(object):
         B.update_size()
         A.update_size()
 
-    def right_then_left_rotation(self, node: AVLNode, relative_direction: str):
+    def right_then_left_rotation(self, node: AVLNode, relative_direction: str) -> None:
+        """
+        Preforms an AVL right-then-left rotation.
+
+        The method rotates the nodes and updates the relevant attributes accordingly
+
+        Complexity: O(1)
+
+        :param node: AVLNode - The node that rotates
+        :param relative_direction: str - Sets the node's correct final direction
+        :return: None
+        """
+
         self.right_rotation(node=node.right, relative_direction=None)
         self.left_rotation(node=node, relative_direction=relative_direction)
 
-    def left_then_right_rotation(self, node: AVLNode, relative_direction: str):
+    def left_then_right_rotation(self, node: AVLNode, relative_direction: str) -> None:
+        """
+        Preforms an AVL left-then-right rotation.
+
+        The method rotates the nodes and updates the relevant attributes accordingly
+
+        Complexity: O(1)
+
+        :param node: AVLNode - The node that rotates
+        :param relative_direction: str - Sets the node's correct final direction
+        :return: None
+        """
+
         self.left_rotation(node=node.left, relative_direction=None)
         self.right_rotation(node=node, relative_direction=relative_direction)
 
-    def BST_insert(self, node: AVLNode):
+    def BST_insert(self, node: AVLNode) -> None:
+        """
+        A classic Binary Search tree insertion as learned in class.
+
+        The method goes down the tree to the correct insertion spot and updates size attribute while doing so.
+
+        Complexity: O(n)
+
+        :param node: AVLNode - the node being inserted
+        :return: None
+        """
 
         node.add_dummy_nodes()
 
+        # If this is the first insertion or the tree is empty
         if self.is_empty():
             self.root = node
             self.root.size = 1
@@ -657,7 +718,7 @@ class AVLTree(object):
             higher_node = AVLNode()
             lower_node = self.root
 
-            # walking down the tree
+            # Walking down the tree to the designated parent
             while lower_node.is_real_node():
                 higher_node = lower_node
 
@@ -670,67 +731,24 @@ class AVLTree(object):
 
             node.parent = higher_node
 
-            # inserting at the right place
+            # Inserting at the right relative direction
             if node.key < higher_node.key:
                 higher_node.left = node
             else:
                 higher_node.right = node
 
-    """
-    @pre: node is a real pointer to a node in self
-    """
-    def BST_delete(self, node: AVLNode):
+    def successor(self, node: AVLNode) -> AVLNode | None:
+        """
+        Finds a given node's successor node.
 
-        has_dummy_child = node.has_dummy_child()
-        node_relative_direction = node.get_relative_direction()
+        Complexity: O(log(n)) - In the WC, we would go up/down the entire tree, which means the complexity is
+                                linear with the tree's height, which is log(n) at most.
 
-        if has_dummy_child:
-            new_node = AVLNode()
+        :param node: AVLNode - The successor of which node to find
+        :return: AVLNode if successor found, None if input node is maximum or the tree is empty
+        """
 
-            # Case 1: x is leaf
-            if node.is_leaf():
-
-                # node is the only node on tree
-                if node_relative_direction == 'root':
-                    self.root = new_node
-                    return
-
-                else:
-                    need_rebalance_from = node.parent
-
-                    new_node.set_as_dummy()
-                    new_node.parent = node.parent
-                    setattr(node.parent, node_relative_direction, new_node)
-
-                    return need_rebalance_from
-
-            # Case 2: node has one child
-            child_relative_direction = 'left' if node.left.is_real_node() else 'right'
-            relevant_child = getattr(node, child_relative_direction)
-
-            setattr(node, child_relative_direction + ".parent", node.parent)  # example : node.left.parent = node.parent
-            setattr(node.parent, node_relative_direction, relevant_child)
-
-            return relevant_child
-
-        # Case 3: node has two children
-        else:
-            new_node = self.successor(node=node)  # y
-            self.BST_delete(node=new_node)
-            # node.set_as_other_node(other=new_node, with_parent=True)
-
-            # new_node.set_as_other_node(other=node, with_parent=True)
-            self.replace_nodes(original=node, new=new_node)
-
-            return new_node
-
-    ####################
-
-    #####################
-    #### Predecessor ####
-    #####################
-
-    def successor(self, node: AVLNode):
+        # Quick exit for when the node is the maximum node or the tree is empty
         if node == self.max or self.is_empty():
             return None
 
@@ -740,15 +758,26 @@ class AVLTree(object):
                 curr_node = curr_node.left
             return curr_node
 
-        # If i'm here- I'm not a root!
+        # If I'm here- I'm not a root!
         else:
-            curr_node = node
+            curr_node = node  # For readability purposes, generally redundant
             while curr_node.parent.right == curr_node:
                 curr_node = curr_node.parent
 
             return curr_node.parent if curr_node != self.root else curr_node
 
-    def predecessor(self, node: AVLNode):
+    def predecessor(self, node: AVLNode) -> AVLNode | None:
+        """
+        Finds a given node's predecessor node.
+
+        Complexity: O(log(n)) - In the WC, we would go up/down the entire tree, which means the complexity is
+                                linear with the tree's height, which is log(n) at most.
+
+        :param node: AVLNode - The predecessor of which node to find
+        :return: AVLNode if successor found, None if input node is minimum or the tree is empty
+        """
+
+        # Quick exit for when the node is the minimum node or the tree is empty
         if node == self.min or self.is_empty():
             return None
 
@@ -760,7 +789,7 @@ class AVLTree(object):
 
         # If i'm here- I'm not a root!
         else:
-            curr_node = node
+            curr_node = node  # For readability purposes, generally redundant
             while curr_node.parent.left == curr_node:
                 curr_node = curr_node.parent
 
@@ -773,19 +802,94 @@ class AVLTree(object):
     @returns: the number of rebalancing operation due to AVL rebalancing
     """
 
-    def delete(self, node):
+    def delete(self, node: AVLNode) -> int:
+        """
+        Deletes a given node in the tree.
 
+        The method returns the number of balance actions required in the deletion process.
+
+        Complexity: O(log(n)) - Successor/Predecessor: O(log(n)) + BST_delete: O(log(n)) + rebalance_up: O(log(n))
+
+        :param node: AVLNode - The node to delete from the tree
+        :return: int - The number of rebalance actions taken
+        """
+
+        # Updating min/max attribute
         if node.key == self.min.key:
             self.min = self.successor(node=self.min)
-
         if node.key == self.max.key:
             self.max = self.predecessor(node=self.max)
 
         rebalance_start_node = self.BST_delete(node=node)
-        if rebalance_start_node:  # The tree is empty after deletion -> No need for rebalancing
-            balance_actions = self.rebalance_up(start_node=rebalance_start_node)
+        if rebalance_start_node:  # Checking if a rebalance starting node is present
+            balance_actions = self.rebalance_up(start_node=rebalance_start_node)  # If so, start rebalancing
             return balance_actions
-        return 0
+        return 0  # Else, the tree is empty after deletion meaning no need for rebalancing
+
+    """
+    @pre: node is a real pointer to a node in self
+    """
+    def BST_delete(self, node: AVLNode) -> AVLNode | None:
+        """
+        A classic Binary Search Tree deletion.
+
+        The method differentiates between one of 3 possible cases and preforms the deletion accordingly.
+
+        The methods returns the node from which the AVL tree should start its rebalancing process, or None if the
+        deleted node was the only node in the tree.
+
+        Complexity: O(log(n)) -
+                                Cases 1 & 2 are both O(1) since they are changes of pointers. Case 3 in the WC
+                                could be O(log(n)) because the recursion call would stop when reaching a leaf, and
+                                that might require going down the entire tree and finding successors.
+                                Since we guarantee this method is being called on an AVL tree, it would take up to
+                                O(log(n)) time.
+
+        :param node: AVLNode - The node to be deleted from the tree
+        :return: AVLNode | None - The node from which rebalancing should start
+        """
+
+        has_dummy_child = node.has_dummy_child()
+        node_relative_direction = node.get_relative_direction()
+
+        if has_dummy_child:
+            new_node = AVLNode()
+
+            # Case 1: node is a leaf
+            if node.is_leaf():
+
+                # The node is the only node in the tree
+                if node_relative_direction == "root":
+                    self.root = new_node
+                    return None
+
+                # There's at least one more node
+                else:
+                    need_rebalance_from = node.parent
+
+                    new_node.set_as_dummy()
+                    new_node.parent = node.parent
+                    setattr(node.parent, node_relative_direction, new_node)  # Replaces deleted node with a dummy
+
+                    return need_rebalance_from
+
+            # Case 2: node has one child
+            child_relative_direction = 'left' if node.left.is_real_node() else 'right'
+            relevant_child = getattr(node, child_relative_direction)
+
+            # Passing the child to node's parent in the correct direction
+            setattr(node, child_relative_direction + ".parent", node.parent)  # Example: node.left.parent = node.parent
+            setattr(node.parent, node_relative_direction, relevant_child)
+
+            return relevant_child
+
+        # Case 3: node has two children
+        else:
+            new_node = self.successor(node=node)
+            self.BST_delete(node=new_node)
+            self.replace_nodes(original_node=node, new_node=new_node)
+
+            return new_node
 
 
     """returns an array representing dictionary 
@@ -793,7 +897,17 @@ class AVLTree(object):
     @returns: a sorted list according to key of touples (key, value) representing the data structure
     """
 
-    def avl_to_array(self):
+    def avl_to_array(self) -> list:
+        """
+        Returns an array with the tree's key-value pairs, sorted by the keys (ascending).
+
+        The method does so by calling the tree's successor method n times starting from the tree's minimum.
+
+        Complexity: O(n) - As proved in recitation 3 (Q4). In this case we preform n successor calls, meaning the total
+                           time complexity is O(n + log(n)) => O(n)
+
+        :return: list(int, Any) - key-value pairs, sorted by the keys (ascending)
+        """
         arr = []
 
         if self.is_empty():
@@ -813,8 +927,223 @@ class AVLTree(object):
     @returns: the number of items in dictionary 
     """
 
-    def size(self):
+    def size(self) -> int:
+        """
+        Returns the tree's size.
+
+        The method calls the root's size attribute.
+
+        Complexity: O(1)
+
+        :return: int - Size of the tree
+        """
         return self.get_root().get_size()
+
+    """joins self with key and another AVLTree
+    @type tree: AVLTree 
+    @param tree: a dictionary to be joined with self
+    @type key: int 
+    @param key: The key separting self with tree
+    @type val: any 
+    @param val: The value attached to key
+    @pre: all keys in self are smaller than key and all keys in tree are larger than key,
+    or the other way around.
+    @rtype: int
+    @returns: the absolute value of the difference between the height of the AVL trees joined
+    """
+
+    def join(self, tree, key: int, val) -> int:
+        """
+        Joining two AVL trees using a given node that satisfies:
+        self.max.key < node.key < tree.min.key
+
+        The methods makes self the joined tree, and returns the height differences of the trees plus 1.
+        After calling this method, the input tree is no longer usable.
+
+        Complexity: O(|tree.root.height - self.root.height| + 1) - the amount of levels we go up the tree is always the
+                                                                 height difference of the joined trees.
+
+        :param tree: AVLTree - The tree to join with self
+        :param key: int - The pivot node's key
+        :param val: Any - The pivot node's value
+        :return: int - Absolute value of height difference between joined trees, plus 1
+        """
+
+        pivot_node = AVLNode(key=key, value=val)
+
+        has_empty = self.is_empty() or tree.is_empty()
+
+        if has_empty:  # Quick exit: one of the trees is empty
+            height_difference = abs(self.root.height - tree.root.height) + 1
+            self.join_with_dummy(tree=tree, pivot_node=pivot_node)
+            return height_difference
+
+        # Both trees are not empty
+        join_direction = "left" if self.root.key > pivot_node.key else "right"
+
+        if join_direction == "right":
+            height_difference = self.join_from_right(other=tree, pivot_node=pivot_node)
+            self.max = tree.max
+        else:  # join_direction == "left"
+            height_difference = self.join_from_left(other=tree, pivot_node=pivot_node)
+            self.min = tree.min
+
+        self.rebalance_up(start_node=pivot_node)  # rebalance from x(=new_node) upwards
+
+        return height_difference
+
+    def join_with_dummy(self, tree, pivot_node: AVLNode) -> None:
+        """
+        Joins a non-empty tree with an empty tree.
+
+        Complexity: O(1)
+
+        :param tree: AVLTree - The tree to join.
+        :param pivot_node: AVLNode - The "middle" node to join with
+        :return: None
+        """
+
+        if not tree.is_empty():  # self is empty
+            tree.insert(key=pivot_node.key, val=pivot_node.value)
+            self.set_as_other_tree(other=tree)
+
+        else:  # tree is empty
+            self.insert(key=pivot_node.key, val=pivot_node.value)
+
+    def join_from_left(self, other, pivot_node: AVLNode) -> int:
+        """
+        Joins `other` with self when self is rightmost, meaning pivot_node.key < self.root.key
+
+        The method differentiates between one of 3 possible cases and preforms the joining accordingly.
+
+        Complexity:  O(|other.root.height - self.root.height| + 1) - The amount of levels we go up the tree is always the
+                                                                 height difference of the joined trees WC.
+
+        :param other: AVLTree - The tree to be joined to self
+        :param pivot_node: AVLNode - The "middle" node to join the trees with
+        :return: int - Absolute value of height difference between joined trees, plus 1
+        """
+
+        height_difference = self.root.height - other.root.height
+
+        #  Simple joining - height difference (i.e. balance-factor of pivot_node) is <= 1
+        if abs(height_difference) <= 1:
+            self.root.parent = pivot_node
+            other.root.parent = pivot_node
+
+            pivot_node.right = self.root
+            pivot_node.left = other.root
+
+            self.root = pivot_node
+
+        elif height_difference > 0:  # self is higher than other
+            sub_tree = self.get_subtree_root(direction="left", subtree_height=other.root.height)
+
+            pivot_node.left = other.root
+            other.root.parent = pivot_node
+
+            pivot_node.right = sub_tree
+            pivot_node.parent = sub_tree.parent
+            sub_tree.parent.left = pivot_node
+
+            sub_tree.parent = pivot_node
+
+        else:  # other is higher than self
+            sub_tree = other.get_subtree_root(direction="right", subtree_height=self.root.height)
+
+            pivot_node.right = self.root
+            self.root.parent = pivot_node
+
+            pivot_node.left = sub_tree
+            pivot_node.parent = sub_tree.parent
+            sub_tree.parent.right = pivot_node
+
+            sub_tree.parent = pivot_node
+
+            self.root = other.root
+        return abs(height_difference) + 1
+
+    def join_from_right(self, other, pivot_node: AVLNode) -> int:
+        """
+        Joins `other` with self when self is leftmost, meaning pivot_node.key > self.root.key
+
+        The method differentiates between one of 3 possible cases and preforms the joining accordingly.
+
+        Complexity:  O(|other.root.height - self.root.height| + 1) - The amount of levels we go up the tree is always the
+                                                                 height difference of the joined trees WC.
+
+        :param other: AVLTree - The tree to be joined to self
+        :param pivot_node: AVLNode - The "middle" node to join the trees with
+        :return: int - Absolute value of height difference between joined trees, plus 1
+        """
+
+        height_difference = self.root.height - other.root.height
+
+        #  Simple joining - height difference (i.e. balance-factor of pivot_node) is <= 1
+        if abs(height_difference) <= 1:
+            self.root.parent = pivot_node
+            other.root.parent = pivot_node
+
+            pivot_node.left = self.root
+            pivot_node.right = other.root
+
+            self.root = pivot_node
+
+        elif height_difference > 0:  # self is higher than other
+            sub_tree = self.get_subtree_root(direction="right", subtree_height=other.root.height)
+
+            pivot_node.right = other.root
+            other.root.parent = pivot_node
+
+            pivot_node.left = sub_tree
+            pivot_node.parent = sub_tree.parent
+            sub_tree.parent.right = pivot_node
+
+            sub_tree.parent = pivot_node
+
+        else:  # other is higher than self
+            sub_tree = other.get_subtree_root(direction="left", subtree_height=self.root.height)
+
+            pivot_node.left = self.root
+            self.root.parent = pivot_node
+
+            pivot_node.right = sub_tree
+            pivot_node.parent = sub_tree.parent
+            sub_tree.parent.left = pivot_node
+
+            sub_tree.parent = pivot_node
+
+            self.root = other.root
+        return abs(height_difference) + 1
+
+    def get_subtree_root(self, direction: str, subtree_height: int) -> AVLNode:
+        """
+        Returns an AVLNode with desired height, going down a specific direction starting from the root.
+
+        Complexity: O(log(n)) - In the WC we went down the entire tree, then the time complexity is linear with the
+                                tree's height which is O(log(n))
+
+        :param direction: str - "left" or "right". The direction in which walking down the tree goes.
+        :param subtree_height: int - Non-negative int which is the desired subtree height
+        :return: AVLNode - The found node from which the subtree stems
+        """
+
+        curr_node = self.root
+
+        if direction == "right":
+            while curr_node.height > subtree_height:
+                if not curr_node.right.is_real_node():  # Edge-case of sub_tree_height == 0 -> Reaches dummy-node
+                    curr_node = curr_node.left
+                else:
+                    curr_node = curr_node.right
+        else:  # direction == "left"
+            while curr_node.height > subtree_height:
+                if not curr_node.left.is_real_node():    # Edge-case of sub_tree_height == 0 -> Reaches dummy-node
+                    curr_node = curr_node.right
+                else:
+                    curr_node = curr_node.left
+
+        return curr_node  # this is the subtree root!
 
     """splits the dictionary at a given node
     @type node: AVLNode
@@ -826,19 +1155,36 @@ class AVLTree(object):
     dictionary larger than node.key.
     """
 
-    def split(self, node):
+    def split(self, node: AVLNode) -> list:
+        """
+        Splits the current tree from a specific node into 2 non-usable trees, where one contains nodes with keys smaller
+        than node.key, and the other with keys greater than node.key.
 
+        The method uses split-by-joins as learned in class, meaning it generates 2 new trees and joins each one of
+        them with a relevant subtree of self as described in `join`.
+
+        Complexity: O(log(n)) - As learned in class and based on our implementation of the `join` method,
+                                we are actually calculating a telescopic series of n-1 items that concludes to O(log(n))
+
+        :param node: AVLNode - The node from which the method splits the tree
+        :return: list[AVLTree, AVLTree] - A list with the 2 seperated trees in the following order: [smaller_than_tree, greater_than_tree]
+        """
+
+        # Initializing empty trees to be populated
         left_tree = AVLTree()
         right_tree = AVLTree()
 
+        # Populating first nodes
         left_tree.root = node.left
         right_tree.root = node.right
 
         curr_node = node
 
-        while curr_node.parent:  # Up till the root
+        while curr_node.parent:  # Going up the tree until reaching the root
             temp_tree = AVLTree()
             temp_node = AVLNode()
+
+            #  Creating subtrees and joining them with left/right_tree with subtree.root as pivot node
             if curr_node.get_relative_direction() == "right":
 
                 temp_node.set_as_other_node(other=curr_node.parent.left, with_parent=False)
@@ -859,172 +1205,33 @@ class AVLTree(object):
 
             curr_node = curr_node.parent
 
-        #  maintain min and max for the new splitted trees
+        #  Maintain minimum and maximum for the new seperated trees
         if not right_tree.is_empty():
             right_tree.max = self.max
             right_tree.min = self.successor(node=node)
-            # right_tree.init_min()
 
         if not left_tree.is_empty():
             left_tree.min = self.min
             left_tree.max = self.predecessor(node=node)
-            # left_tree.init_max()
 
         return [left_tree, right_tree]
 
-    def get_sub_tree_root(self, direction: str, sub_tree_height: int):
-
-        # this part is allowing us abstraction.
-        # if the relative direction of the higher tree is right, then in order to get the correct sub-tree then we
-
-        curr_node = self.root
-
-        if direction == "right":
-            while curr_node.height > sub_tree_height:
-                if not curr_node.right.is_real_node():  # Edge-case of sub_tree_height == 0 -> Reaches dummy-node
-                    curr_node = curr_node.left
-                else:
-                    curr_node = curr_node.right
-        else:  # direction == "left"
-            while curr_node.height > sub_tree_height:
-                if not curr_node.left.is_real_node():    # Edge-case of sub_tree_height == 0 -> Reaches dummy-node
-                    curr_node = curr_node.right
-                else:
-                    curr_node = curr_node.left
-
-        return curr_node  # this is the sub-tree root!
-
-    """joins self with key and another AVLTree
-    @type tree: AVLTree 
-    @param tree: a dictionary to be joined with self
-    @type key: int 
-    @param key: The key separting self with tree
-    @type val: any 
-    @param val: The value attached to key
-    @pre: all keys in self are smaller than key and all keys in tree are larger than key,
-    or the other way around.
-    @rtype: int
-    @returns: the absolute value of the difference between the height of the AVL trees joined
-    """
-
-    def join(self, tree, key, val):
-
-        pivot_node = AVLNode(key=key, value=val)
-
-        has_empty = self.is_empty() or tree.is_empty()
-
-        if has_empty:  # Quick exit: one of the trees is empty
-            height_difference = abs(self.root.height - tree.root.height) + 1
-            self.join_with_dummy(tree=tree, pivot_node=pivot_node)
-            return height_difference
-
-        # Both trees are not empty
-        join_direction = "left" if self.root.key > pivot_node.key else "right"
-
-        if join_direction == "right":
-            height_difference = self.join_right(other=tree, pivot_node=pivot_node)
-            self.max = tree.max
-        else:
-            height_difference = self.join_left(other=tree, pivot_node=pivot_node)
-            self.min = tree.min
-
-        self.rebalance_up(start_node=pivot_node)  # rebalance from x(=new_node) upwards
-
-        return height_difference
-
-    def join_with_dummy(self, tree, pivot_node):
-
-        if not tree.is_empty():  # self is empty
-            tree.insert(key=pivot_node.key, val=pivot_node.value)
-            self.set_as_other_tree(other=tree)
-
-        else:  # tree is empty
-            self.insert(key=pivot_node.key, val=pivot_node.value)
-
-    def join_left(self, other, pivot_node):
-        height_difference = self.root.height - other.root.height
-
-        #  Simple joining
-        if abs(height_difference) <= 1:
-            self.root.parent = pivot_node
-            other.root.parent = pivot_node
-
-            pivot_node.right = self.root
-            pivot_node.left = other.root
-
-            self.root = pivot_node
-
-        elif height_difference > 0:  # self is higher
-            sub_tree = self.get_sub_tree_root(direction="left", sub_tree_height=other.root.height)
-
-            pivot_node.left = other.root
-            other.root.parent = pivot_node
-
-            pivot_node.right = sub_tree
-            pivot_node.parent = sub_tree.parent
-            sub_tree.parent.left = pivot_node
-
-            sub_tree.parent = pivot_node
-
-        else:  # other is higher
-            sub_tree = other.get_sub_tree_root(direction="right", sub_tree_height=self.root.height)
-
-            pivot_node.right = self.root
-            self.root.parent = pivot_node
-
-            pivot_node.left = sub_tree
-            pivot_node.parent = sub_tree.parent
-            sub_tree.parent.right = pivot_node
-
-            sub_tree.parent = pivot_node
-
-            self.root = other.root
-        return abs(height_difference) + 1
-
-    def join_right(self, other, pivot_node):
-        height_difference = self.root.height - other.root.height
-
-        #  Simple joining
-        if abs(height_difference) <= 1:
-            self.root.parent = pivot_node
-            other.root.parent = pivot_node
-
-            pivot_node.left = self.root
-            pivot_node.right = other.root
-
-            self.root = pivot_node
-
-        elif height_difference > 0:  # self is higher
-            sub_tree = self.get_sub_tree_root(direction="right", sub_tree_height=other.root.height)
-
-            pivot_node.right = other.root
-            other.root.parent = pivot_node
-
-            pivot_node.left = sub_tree
-            pivot_node.parent = sub_tree.parent
-            sub_tree.parent.right = pivot_node
-
-            sub_tree.parent = pivot_node
-
-        else:  # other is higher
-            sub_tree = other.get_sub_tree_root(direction="left", sub_tree_height=self.root.height)
-
-            pivot_node.left = self.root
-            self.root.parent = pivot_node
-
-            pivot_node.right = sub_tree
-            pivot_node.parent = sub_tree.parent
-            sub_tree.parent.left = pivot_node
-
-            sub_tree.parent = pivot_node
-
-            self.root = other.root
-        return abs(height_difference) + 1
-
     def rebalance_up(self, start_node: AVLNode) -> int:
+        """
+        Maintaining AVL properties by going up the tree while preforming rotations and updating attributes if needed.
+        The method starts from a given node in the tree and goes up until reaching the root.
+
+        The method returns the number of balance actions required for the rebalance process as defined in the assignment.
+
+        Complexity: O(log(n)) - In the WC wee must go up the entire tree, preforming actions with O(1) complexity on
+                                each iteration, meaning a total of O(log(n))
+
+        :param start_node: AVLNode - The node which we start going up from.
+        :return: int - Number of balance actions taken in the call.
+        """
         count_balance_actions = 0
 
-        while start_node:  # while start_node is not None, meaning we reached the root
+        while start_node:  # While start_node is not None, meaning we reached the root
 
             did_height_change = start_node.height_manager()
 
@@ -1043,24 +1250,42 @@ class AVLTree(object):
                 count_balance_actions += self.rotate(node=start_node)
                 return count_balance_actions
 
-    def replace_nodes(self, original: AVLNode, new: AVLNode):
+    def replace_nodes(self, original_node: AVLNode, new_node: AVLNode) -> None:
+        """
+        Puts a new node in another node's place in the tree.
 
-        original_relative_direction = original.get_relative_direction()
+        Complexity: O(1)
 
-        new.left = original.left
-        original.left.parent = new
+        :param original_node: AVLNode - The present node in the tree
+        :param new_node: AVLNode - The node to be replaced with
+        :return: None
+        """
 
-        new.right = original.right
-        original.right.parent = new
+        original_relative_direction = original_node.get_relative_direction()
 
-        if original.parent:  # If original is the root
-            new.parent = original.parent
-            setattr(original.parent, original_relative_direction, new)
-        else:
-            self.root = new
-            new.parent = None
+        new_node.left = original_node.left
+        original_node.left.parent = new_node
 
-    def set_as_other_tree(self, other):
+        new_node.right = original_node.right
+        original_node.right.parent = new_node
+
+        if original_node.parent:  # original_node has a parent
+            new_node.parent = original_node.parent
+            setattr(original_node.parent, original_relative_direction, new_node)
+
+        else:  # original_node is the root
+            self.root = new_node
+            new_node.parent = None
+
+    def set_as_other_tree(self, other) -> None:
+        """
+        Sets another tree as the current tree.
+
+        Complexity: O(1)
+
+        :param other: AVLTree - The tree that being set as self
+        :return: None
+        """
         self.root = other.root
         self.max = other.max
         self.min = other.min
@@ -1074,7 +1299,17 @@ class AVLTree(object):
     @returns: the rank of node in self
     """
 
-    def rank(self, node):
+    def rank(self, node: AVLNode) -> int:
+        """
+        Returns the rank of a given node in the tree.
+
+        Complexity: O(log(n)) - As learned in class and recitations, because we maintain `size` attribute (which is dependant
+                           only by the node's children and it's being calculated in O(1) time with their attributes) it
+                           takes O(log(n)) calls of O(1) operations in the WC to get the rank.
+
+        :param node: AVLNode - The node to calculate its rank. The node must be in the tree.
+        :return: int - The rank of the node.
+        """
         count = node.left.size + 1
         curr_node = node
 
@@ -1093,16 +1328,33 @@ class AVLTree(object):
     @returns: the item of rank i in self
     """
 
-    def select(self, i):
+    def select(self, i: int) -> AVLNode:
+        """
+        Returns the node within the tree with the corresponding input rank (i).
+
+        The method checks whether the desired node is in the left/right subtree of the root and goes to the minimum/maximum
+        accordingly. Then, the methods travels up the tree with successor/predecessor until it reaches the node with
+        the i'th rank.
+
+        Complexity: O(log(n)) - In the WC the method preforms max(i - 1, n - i) calls of successor/predecessor, which is
+                                O(log(n)) as described in the `avl_to_array` method.
+
+        :param i: int -
+        :return:
+        """
+
+        # Quick exit: if `i` is the root's rank we don't need to go up the tree
         if i == self.root.left.size + 1:
             return self.root
-        elif i <= self.root.left.size:  # Go to min (i-1 times)
-            curr_node = self.min
-            for _ in range(1, i):
+
+        elif i <= self.root.left.size:
+            curr_node = self.min  # Go to minimum
+            for _ in range(1, i):  # i - 1 times
                 curr_node = self.successor(node=curr_node)
-        else:  # Go to max (n-i times)
-            curr_node = self.max
-            for _ in range(1, self.size() - i + 1):
+
+        else:
+            curr_node = self.max  # Go to maximum
+            for _ in range(1, self.size() - i + 1):  # n - i times
                 curr_node = self.predecessor(node=curr_node)
 
         return curr_node
@@ -1112,12 +1364,23 @@ class AVLTree(object):
     @returns: the root, None if the dictionary is empty
     """
 
-    def get_root(self):
+    def get_root(self) -> AVLNode:
+        """
+        Returns the tree's root node.
+
+        Complexity: O(1)
+
+        :return: AVLNode - The tree's root node
+        """
         return self.root
 
     #########################
     ##### Print Methods #####
     #########################
+    """
+    These methods are not used in any of the required methods in the assignment so we did not write docstring nor 
+    calculated their time complexity, they are used to nicely print the trees and help us debug our project. 
+    """
     def printt(self):
         out = ""
         for row in self.printree(self.root):  # need printree.py file
@@ -1186,8 +1449,3 @@ class AVLTree(object):
         while row[i] == " ":
             i += 1
         return i
-
-
-#################
-#### Testing ####
-#################
