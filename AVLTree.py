@@ -94,7 +94,14 @@ class AVLNode(object):
     @returns: the key of self, None if the node is virtual
     """
 
-    def get_key(self):
+    def get_key(self) -> int:
+        """
+        Returns the node's key.
+
+        Complexity: O(1)
+
+        :return: int - The node's key
+        """
         return self.key
 
     def get_relative_direction(self) -> str:
@@ -115,6 +122,13 @@ class AVLNode(object):
     """
 
     def get_value(self):
+        """
+        Returns the node's stored value.
+
+        Complexity: O(1)
+
+        :return: Any - The node's value
+        """
         return self.value
 
     """returns the left child
@@ -123,6 +137,13 @@ class AVLNode(object):
     """
 
     def get_left(self):
+        """
+        Returns the node's left child.
+
+        Complexity: O(1)
+
+        :return: AVLNode - Node's left child
+        """
         return self.left
 
     """returns the right child
@@ -132,6 +153,13 @@ class AVLNode(object):
     """
 
     def get_right(self):
+        """
+        Returns the node's right child.
+
+        Complexity: O(1)
+
+        :return: AVLNode - Node's right child
+        """
         return self.right
 
     """returns the parent 
@@ -141,6 +169,13 @@ class AVLNode(object):
     """
 
     def get_parent(self):
+        """
+        Returns the node's parent
+
+        Complexity: O(1)
+
+        :return: AVLNode - Node's parent
+        """
         return self.parent
 
     """returns the height
@@ -149,7 +184,14 @@ class AVLNode(object):
     @returns: the height of self, -1 if the node is virtual
     """
 
-    def get_height(self):
+    def get_height(self) -> int:
+        """
+        Returns the node's height.
+
+        Complexity: O(1)
+
+        :return: int - Node's height
+        """
         return self.height
 
     """returns the size of the subtree
@@ -158,7 +200,14 @@ class AVLNode(object):
     @returns: the size of the subtree of self, 0 if the node is virtual
     """
 
-    def get_size(self):
+    def get_size(self) -> int:
+        """
+        Returns the node's size.
+
+        Complexity: O(1)
+
+        :return: int - Node's size
+        """
         return self.size
 
     def get_bf(self) -> int:
@@ -177,7 +226,15 @@ class AVLNode(object):
     @param key: key
     """
 
-    def set_key(self, key):
+    def set_key(self, key) -> None:
+        """
+        Sets a given key to the node.
+
+        Complexity: O(1)
+
+        :param key: int - Key to be set to the node
+        :return:
+        """
         self.key = key
 
     """sets value
@@ -185,7 +242,15 @@ class AVLNode(object):
     @param value: data
     """
 
-    def set_value(self, value):
+    def set_value(self, value) -> None:
+        """
+        Sets a given value to the node.
+
+        Complexity: O(1)
+
+        :param value: Any - Value to be set to the node
+        :return:
+        """
         self.value = value
 
     """sets left child
@@ -193,7 +258,15 @@ class AVLNode(object):
     @param node: a node
     """
 
-    def set_left(self, node):
+    def set_left(self, node) -> None:
+        """
+        Sets the node's left child.
+
+        Complexity: O(1)
+
+        :param node: AVLNode - The designated left child
+        :return: None
+        """
         self.left = node
 
     """sets right child
@@ -201,7 +274,15 @@ class AVLNode(object):
     @param node: a node
     """
 
-    def set_right(self, node):
+    def set_right(self, node) -> None:
+        """
+        Sets the node's right child.
+
+        Complexity: O(1)
+
+        :param node: AVLNode - The designated right child
+        :return: None
+        """
         self.right = node
 
     """sets parent
@@ -209,7 +290,15 @@ class AVLNode(object):
     @param node: a node
     """
 
-    def set_parent(self, node):
+    def set_parent(self, node) -> None:
+        """
+        Sets the node's parent.
+
+        Complexity: O(1)
+
+        :param node: AVLNode - The designated parent
+        :return: None
+        """
         self.parent = node
 
     """sets the height of the node
@@ -217,7 +306,15 @@ class AVLNode(object):
     @param h: the height
     """
 
-    def set_height(self, h):
+    def set_height(self, h: int) -> None:
+        """
+        Sets the node's height.
+
+        Complexity: O(1)
+
+        :param h: int - The height to set
+        :return: None
+        """
         self.height = h
 
     def height_manager(self) -> bool:
@@ -241,7 +338,15 @@ class AVLNode(object):
     @param s: the size
     """
 
-    def set_size(self, s):
+    def set_size(self, s: int) -> None:
+        """
+        Sets the node's size.
+
+        Complexity: O(1)
+
+        :param s: int - The size to set
+        :return: None
+        """
         self.size = s
 
     def update_size(self) -> None:
@@ -260,6 +365,13 @@ class AVLNode(object):
     """
 
     def is_real_node(self) -> bool:
+        """
+        Checks whether the node is a real node by checking if the node has a populated `key` attribute.
+
+        Complexity: O(1)
+
+        :return: True if node.key is not None
+        """
         return self.key is not None
 
     def has_dummy_child(self) -> bool:
