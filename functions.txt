@@ -1,0 +1,207 @@
+__init__(self, key: int = None, height: int = 0, value=None):
+
+__repr__(self):
+
+__eq__(self, other):
+Complexity: O(1)
+
+__lt__(self, other):
+Complexity: O(1)
+
+__le__(self, other):
+Complexity: O(1)
+
+__gt__(self, other):
+Complexity: O(1)
+
+__ge__(self, other):
+Complexity: O(1)
+
+get_key(self) -> int:
+Complexity: O(1)
+
+get_relative_direction(self) -> str:
+Complexity: O(1)
+
+get_value(self):
+Complexity: O(1)
+
+get_left(self):
+Complexity: O(1)
+
+get_right(self):
+Complexity: O(1)
+
+get_parent(self):
+Complexity: O(1)
+
+get_height(self) -> int:
+Complexity: O(1)
+
+get_size(self) -> int:
+Complexity: O(1)
+
+get_bf(self) -> int:
+Complexity: O(1)
+
+set_key(self, key) -> None:
+Complexity: O(1)
+
+set_value(self, value) -> None:
+Complexity: O(1)
+
+set_left(self, node) -> None:
+Complexity: O(1)
+
+set_right(self, node) -> None:
+Complexity: O(1)
+
+set_parent(self, node) -> None:
+Complexity: O(1)
+
+set_height(self, h: int) -> None:
+Complexity: O(1)
+
+height_manager(self) -> bool:
+Complexity: O(1)
+
+set_size(self, s: int) -> None:
+Complexity: O(1)
+
+update_size(self) -> None:
+Complexity: O(1)
+
+is_real_node(self) -> bool:
+Complexity: O(1)
+
+has_dummy_child(self) -> bool:
+Complexity: O(1)
+
+is_leaf(self) -> bool:
+Complexity: O(1)
+
+add_dummy_nodes(self) -> None:
+Complexity: O(1)
+
+add_left_dummy(self) -> None:
+Complexity: O(1)
+
+add_right_dummy(self):
+Complexity: O(1)
+
+set_as_other_node(self, other, with_parent: bool = True) -> None:
+Complexity: O(1)
+
+set_as_dummy(self) -> None:
+Complexity: O(1)
+
+__init__(self, root: AVLNode = AVLNode()):
+
+__repr__(self):
+
+is_empty(self) -> bool:
+Complexity: O(1)
+
+should_update_min(self, node: AVLNode) -> bool:
+Complexity: O(1)
+
+should_update_max(self, node: AVLNode) -> bool:
+Complexity: O(1)
+
+get_subtree_min(self) -> AVLNode:
+Complexity: O(log(n)) - Going down an entire AVL tree is as its height, which is log(n).
+
+get_subtree_max(self):
+Complexity: O(log(n)) - Going down an entire AVL tree is as its height, which is log(n).
+
+init_min_max(self) -> None:
+Complexity: O(log(n)) - Going down an entire AVL tree is as its height, which is log(n), one time after the other.
+
+Complexity: O(log(n)) - Going down an entire AVL tree is as its height, which is log(n)
+
+search(self, key) -> AVLNode | None:
+
+set_as_child_after_rotation(self, node: AVLNode, relative_direction: str) -> None:
+Complexity: O(1)
+
+insert(self, key: int, val) -> int:
+Complexity: O(log(n))
+
+rotate(self, node: AVLNode) -> int:
+Complexity: O(1)
+
+right_rotation(self, node: AVLNode, relative_direction: str | None) -> None:
+Complexity: O(1)
+
+left_rotation(self, node: AVLNode, relative_direction: str | None):
+Complexity: O(1)
+
+right_then_left_rotation(self, node: AVLNode, relative_direction: str) -> None:
+Complexity: O(1)
+
+left_then_right_rotation(self, node: AVLNode, relative_direction: str) -> None:
+Complexity: O(1)
+
+BST_insert(self, node: AVLNode) -> None:
+Complexity: O(n)
+
+successor(self, node: AVLNode) -> AVLNode | None:
+Complexity: O(log(n)) - In the WC, we would go up/down the entire tree, which means the complexity is
+
+predecessor(self, node: AVLNode) -> AVLNode | None:
+Complexity: O(log(n)) - In the WC, we would go up/down the entire tree, which means the complexity is
+
+delete(self, node: AVLNode) -> int:
+Complexity: O(log(n)) - Successor/Predecessor: O(log(n)) + BST_delete: O(log(n)) + rebalance_up: O(log(n))
+
+BST_delete(self, node: AVLNode) -> AVLNode | None:
+Complexity: O(log(n)) -
+
+size(self) -> int:
+Complexity: O(1)
+
+set_as_other_tree(self, other) -> None:
+Complexity: O(1)
+
+join_with_dummy(self, tree, pivot_node: AVLNode) -> None:
+Complexity: O(1)
+
+join_from_left(self, other, pivot_node: AVLNode) -> int:
+Complexity:  O(|other.root.height - self.root.height| + 1) - The amount of levels we go up the tree is always the
+
+join_from_right(self, other, pivot_node: AVLNode) -> int:
+Complexity:  O(|other.root.height - self.root.height| + 1) - The amount of levels we go up the tree is always the
+
+join(self, tree, key: int, val) -> int:
+Complexity: O(|tree.root.height - self.root.height| + 1) - the amount of levels we go up the tree is always the
+
+get_subtree_root(self, direction: str, subtree_height: int) -> AVLNode:
+Complexity: O(log(n)) - In the WC we went down the entire tree, then the time complexity is linear with the
+
+split(self, node: AVLNode) -> list:
+Complexity: O(log(n)) - As learned in class and based on our implementation of the `join` method,
+
+rebalance_up(self, start_node: AVLNode) -> int:
+Complexity: O(log(n)) - In the WC wee must go up the entire tree, preforming actions with O(1) complexity on
+
+replace_nodes(self, original_node: AVLNode, new_node: AVLNode) -> None:
+Complexity: O(1)
+
+rank(self, node: AVLNode) -> int:
+Complexity: O(log(n)) - As learned in class and recitations, because we maintain `size` attribute (which is dependant
+
+select(self, i: int) -> AVLNode:
+Complexity: O(log(n)) - In the WC the method preforms max(i - 1, n - i) calls of successor/predecessor, which is
+
+get_root(self) -> AVLNode:
+Complexity: O(1)
+
+avl_to_array(self) -> list:
+Complexity: O(n) - As proved in recitation 3 (Q4). In this case we preform n successor calls, meaning the total
+
+printt(self):
+printree(self, t, bykey=True):
+trepr(self, t, bykey=False):
+conc(self, left, root, right):
+leftspace(self, row):
+rightspace(self, row):

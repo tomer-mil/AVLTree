@@ -787,7 +787,7 @@ class AVLTree(object):
             sub_tree.parent = pivot_node
 
         else:  # other is higher
-            sub_tree = other.get_sub_tree_root(direction="right", sub_tree_height=self.root.height)
+            sub_tree = other.get_subtree_root(direction="right", subtree_height=self.root.height)
 
             pivot_node.right = self.root
             self.root.parent = pivot_node
@@ -827,7 +827,7 @@ class AVLTree(object):
             sub_tree.parent = pivot_node
 
         else:  # other is higher
-            sub_tree = other.get_sub_tree_root(direction="left", sub_tree_height=self.root.height)
+            sub_tree = other.get_subtree_root(direction="left", subtree_height=self.root.height)
 
             pivot_node.left = self.root
             self.root.parent = pivot_node
